@@ -1,1 +1,4 @@
 Makefile
+*.o
+oceandepths
+oceandepths.exe
