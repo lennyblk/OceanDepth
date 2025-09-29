@@ -10,7 +10,6 @@ void init_random() {
     srand(time(NULL));
 }
 
-// Génère un nombre aléatoire entre min et max (inclus)
 int random_range(int min, int max) {
     if (min > max) {
         int temp = min;
@@ -28,7 +27,6 @@ void clear_screen() {
     #endif
 }
 
-// Lecture sécurisée d'une chaîne de caractères
 void get_string_input(char *buffer, int max_length) {
     if (fgets(buffer, max_length, stdin) != NULL) {
         // Supprime le '\n' à la fin si présent
@@ -41,7 +39,6 @@ void get_string_input(char *buffer, int max_length) {
     }
 }
 
-// Lecture sécurisée d'un entier avec validation
 int get_int_input(int min, int max) {
     char buffer[MAX_INPUT_LENGTH];
     int value;
@@ -75,7 +72,6 @@ char get_char_input() {
     return '\0'; 
 }
 
-// Affiche une ligne de séparation
 void print_separator(char character, int length) {
     for (int i = 0; i < length; i++) {
         printf("%c", character);
@@ -83,7 +79,6 @@ void print_separator(char character, int length) {
     printf("\n");
 }
 
-// Affiche un titre centré avec des bordures
 void print_title(const char *title) {
     int title_length = strlen(title);
     int total_width = 60;
@@ -119,12 +114,10 @@ void print_success(const char *message) {
     printf(COLOR_GREEN "SUCCÈS: %s" COLOR_RESET "\n", message);
 }
 
-// Affiche un message d'information en bleu
 void print_info(const char *message) {
     printf(COLOR_BLUE "INFO: %s" COLOR_RESET "\n", message);
 }
 
-// Pause avec message "Appuyez sur Entrée pour continuer"
 void pause_screen() {
     printf(COLOR_YELLOW "\nAppuyez sur Entrée pour continuer..." COLOR_RESET);
     getchar();
@@ -147,14 +140,12 @@ int confirm_action(const char *message) {
     }
 }
 
-// Convertit une chaîne en minuscules
 void to_lowercase(char *str) {
     for (int i = 0; str[i]; i++) {
         str[i] = tolower(str[i]);
     }
 }
 
-// Supprime les espaces en début et fin de chaîne
 void trim_string(char *str) {
     int start = 0;
     int end = strlen(str) - 1;
