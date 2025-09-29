@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "utils.h": "c",
+        "ascii_art.h": "c",
+        "types.h": "c"
+    }
+}

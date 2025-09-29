@@ -112,28 +112,28 @@ typedef struct {
 // STRUCTURE DU JOUEUR =======================================================================================================
 
 typedef struct {
-    // Statistiques vitales
-    int hp;                          
-    int hp_max;                      
-    int oxygen;                      
-    int oxygen_max;                  
-    int fatigue;                     
-    
-    // Monnaie et progression
-    int pearls;                      
-    int depth;                       
-    int experience;                  
+    char name[50];                   
     int level;                       
+    int experience;                  
     
-    // Équipement
+    int hp;                          
+    int max_hp;                      
+    int oxygen;                      
+    int max_oxygen;                  
+    
+    int x;                           
+    int y;                           
+    int current_depth;               
+    
+    // Monnaie
+    int pearls;                      
+    
     Weapon equipped_weapon;          
     Armor equipped_armor;            
     
-    // Inventaire (8 emplacements max)
     Item inventory[4];
     int inventory_count;             
     
-    // Effets actifs sur le joueur
     int is_paralyzed;                
     int is_poisoned;                 
     int paralysis_turns_left;        
@@ -196,10 +196,11 @@ typedef struct {
 // STRUCTURE SAVE =======================================================================================================
 
 typedef struct {
-    Zone zones[20];                  
-    int zone_count;                  
-    int current_zone_index;          
-} Map;
+    Player player;                   // Données du joueur sauvegardées
+    Map map;                        // État de la carte
+    int game_time;                  // Temps de jeu en minutes
+    int save_version;               // Version de sauvegarde
+} SaveData;
 
 // STRUCTURE COMBAT =======================================================================================================
 
