@@ -123,7 +123,8 @@ typedef struct {
     
     int x;                           
     int y;                           
-    int current_depth;               
+    int current_zone;              
+    int zones_unlocked; 
     
     // Monnaie
     int pearls;                      
@@ -161,6 +162,14 @@ typedef struct {
 } Skill;
 
 // STRUCTURE ZONE =======================================================================================================
+typedef struct {
+    int id;
+    char name[40];
+    int cleared;
+    int available;
+    int monsters_count;
+    CreatureType monsters[10];
+} Destination;
 
 typedef struct {
     int id;                          
@@ -170,12 +179,12 @@ typedef struct {
     int is_discovered;               
     int is_current_location;         
     
-    // Conditions environnementales
     char current_strength[20];       
     char visibility[20];             
-    int temperature;                 
+    int temperature;   
+   
+    Destination destinations[4];
     
-    // Créatures présentes
     Creature creatures[4];           
     int creature_count;              
     
@@ -196,10 +205,10 @@ typedef struct {
 // STRUCTURE SAVE =======================================================================================================
 
 typedef struct {
-    Player player;                   // Données du joueur sauvegardées
-    Map map;                        // État de la carte
-    int game_time;                  // Temps de jeu en minutes
-    int save_version;               // Version de sauvegarde
+    Player player;                  
+    Map map;                        
+    int game_time;                  
+    int save_version;               
 } SaveData;
 
 // STRUCTURE COMBAT =======================================================================================================
@@ -211,5 +220,8 @@ typedef struct {
     int turn_number;                 
     int combat_active;               
 } CombatState;
+
+// FONCTIONS DE BASE =======================================================================================================
+void initialize_game(Player* player, Map* map);
 
 #endif

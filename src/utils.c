@@ -79,39 +79,9 @@ void print_separator(char character, int length) {
     printf("\n");
 }
 
-void print_title(const char *title) {
-    int title_length = strlen(title);
-    int total_width = 60;
-    int padding = (total_width - title_length - 2) / 2;
-    
-    print_separator('=', total_width);
-    printf("|");
-    
-    for (int i = 0; i < padding; i++) {
-        printf(" ");
-    }
-    
-    printf(COLOR_BOLD COLOR_CYAN "%s" COLOR_RESET, title);
-    
-    for (int i = 0; i < padding; i++) {
-        printf(" ");
-    }
-    
-    // Ajuste si la longueur est impaire
-    if ((total_width - title_length - 2) % 2 != 0) {
-        printf(" ");
-    }
-    
-    printf("|\n");
-    print_separator('=', total_width);
-}
 
 void print_error(const char *message) {
     printf(COLOR_RED "ERREUR: %s" COLOR_RESET "\n", message);
-}
-
-void print_success(const char *message) {
-    printf(COLOR_GREEN "SUCCÈS: %s" COLOR_RESET "\n", message);
 }
 
 void print_info(const char *message) {
@@ -140,32 +110,6 @@ int confirm_action(const char *message) {
     }
 }
 
-void to_lowercase(char *str) {
-    for (int i = 0; str[i]; i++) {
-        str[i] = tolower(str[i]);
-    }
-}
-
-void trim_string(char *str) {
-    int start = 0;
-    int end = strlen(str) - 1;
-    
-    // Trouve le premier caractère non-espace
-    while (str[start] && isspace(str[start])) {
-        start++;
-    }
-    
-    // Trouve le dernier caractère non-espace
-    while (end >= start && isspace(str[end])) {
-        end--;
-    }
-    
-    // Déplace la chaîne
-    int length = end - start + 1;
-    memmove(str, str + start, length);
-    str[length] = '\0';
-}
-
 void print_progress_bar(int current, int max, int width) {
     float percentage = (float)current / max;
     int filled = (int)(percentage * width);
@@ -179,4 +123,14 @@ void print_progress_bar(int current, int max, int width) {
         }
     }
     printf("] %d/%d (%.1f%%)", current, max, percentage * 100);
+}
+
+void print_success(const char* message) {
+    printf(COLOR_GREEN "✓ %s" COLOR_RESET "\n", message);
+}
+
+void print_title(const char* title) {
+    print_separator('=', 60);
+    printf(COLOR_CYAN COLOR_BOLD "  %s  " COLOR_RESET "\n", title);
+    print_separator('=', 60);
 }

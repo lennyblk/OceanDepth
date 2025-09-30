@@ -5,7 +5,9 @@
 #include "../include/utils.h"
 #include "../include/constants.h"
 #include "../include/types.h"
-#include "../include/ascii_art.h"  // Nouveau include
+#include "../include/ascii_art.h" 
+
+int get_zone_from_depth(int depth); // je declare la parce que j'avais un avertissement de con
 
 void player_init(Player *player) {
     if (player == NULL) {
@@ -23,7 +25,7 @@ void player_init(Player *player) {
     
     player->x = 0;
     player->y = 0;
-    player->current_depth = SURFACE_DEPTH;
+    player->current_zone = SURFACE_DEPTH;
     
     strcpy(player->name, "Monster Slayer");
     
@@ -69,7 +71,7 @@ void player_display_stats(const Player *player) {
     
     printf("\n" COLOR_BOLD "POSITION:" COLOR_RESET "\n");
     printf("Coordonnées: (%d, %d)\n", player->x, player->y);
-    printf("Profondeur: %d mètres\n", player->current_depth);
+    printf("Zone: %d\n", player->current_zone);
     
     print_separator('-', 50);
 }
@@ -188,19 +190,19 @@ void player_move(Player *player, int delta_x, int delta_y) {
     
     player->x += delta_x;
     player->y += delta_y;
-    
-    // Mise à jour de la profondeur basée sur Y
-    player->current_depth = player->y * 10; // 10 mètres par unité Y
-    if (player->current_depth < 0) {
-        player->current_depth = 0;
+
+    // Mise à jour de la zone basée sur Y
+    player->current_zone = get_zone_from_depth(player->y * 10);
+    if (player->current_zone < 0) {
+        player->current_zone = 0;
     }
-    
-    // Consommation d'oxygène selon la profondeur
-    int oxygen_cost = 1 + (player->current_depth / 100);
+
+    // Consommation d'oxygène selon la zone
+    int oxygen_cost = 1 + (player->current_zone * 10 / 100);
     player_use_oxygen(player, oxygen_cost);
-    
-    printf(COLOR_BLUE "%s se déplace à la position (%d, %d) - Profondeur: %d m" COLOR_RESET "\n", 
-           player->name, player->x, player->y, player->current_depth);
+
+    printf(COLOR_BLUE "%s se déplace à la position (%d, %d) - Zone: %d" COLOR_RESET "\n",
+           player->name, player->x, player->y, player->current_zone);
 }
 
 int player_is_alive(const Player *player) {
@@ -231,7 +233,7 @@ void player_add_experience(Player *player, int exp) {
         int oxygen_bonus = 5;
         
         player->max_hp += hp_bonus;
-        player->hp = player->max_hp; // Soins complets
+        player->hp = player->max_hp; 
         player->max_oxygen += oxygen_bonus;
         player->oxygen = player->max_oxygen;
         
@@ -253,4 +255,11 @@ void player_add_pearls(Player *player, int pearls) {
     player->pearls += pearls;
     printf(COLOR_YELLOW "%s trouve %d perles! (Total: %d)" COLOR_RESET "\n", 
            player->name, pearls, player->pearls);
+}
+
+int get_zone_from_depth(int depth) {
+    if (depth <= 0) return 0;      // Surface
+    if (depth <= 50) return 1;     // Zone 1
+    if (depth <= 150) return 2;    // Zone 2
+    return 3;                      // Zone 3 (abysse)
 }
