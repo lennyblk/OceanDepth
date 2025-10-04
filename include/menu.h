@@ -13,8 +13,6 @@ void explore_map(Player *player, Map *map);
 void search_creatures(Player *player, Map *map);
 void visit_shop(Player *player);
 void rest_at_surface(Player *player);
-void manage_inventory(Player *player);
-void manage_equipment(Player *player);
 void save_game(Player *player, Map *map);
 void display_journal(Player *player);
 
@@ -35,7 +33,7 @@ void unlock_next_zone(Player *player, Map *map, int current_zone);
 
 // Fonctions de combat pas encore fait
 int fight_all_monsters(Player *player, int zone, int monsters_count);
-void give_zone_rewards(Player *player, int zone, int destination);
+int give_zone_rewards(Player *player, int zone, int destination);
 
 // Fonctions utilitaires 
 int confirm_action(const char* message);

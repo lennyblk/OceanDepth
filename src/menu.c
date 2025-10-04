@@ -6,6 +6,7 @@
 #include "../include/constants.h"
 #include "../include/ascii_art.h"
 #include "../include/map.h"
+#include "../include/inventory.h"
 
 void display_title_screen() {
     clear_screen();
@@ -415,18 +416,6 @@ void rest_at_surface(Player *player) {
     pause_screen();
 }
 
-void manage_inventory(Player *player) {
-    (void)player;
-    printf("Fonction manage_inventory pas encore implémentée.\n");
-    pause_screen();
-}
-
-void manage_equipment(Player *player) {
-    (void)player;
-    printf("Fonction manage_equipment pas encore implémentée.\n");
-    pause_screen();
-}
-
 void save_game(Player *player, Map *map) {
     (void)player;
     (void)map;
@@ -449,8 +438,9 @@ int fight_all_monsters(Player *player, int zone, int monsters_count) {
     return 1; // Victoire
 }
 
-void give_zone_rewards(Player *player, int zone, int destination) {
+int give_zone_rewards(Player *player, int zone, int destination) {
     int reward = (zone + 1) * (destination + 1) * 5;
     player->pearls += reward;
     printf(COLOR_YELLOW "✨ Vous gagnez %d perles !\n" COLOR_RESET, reward);
+    return 1;
 }
