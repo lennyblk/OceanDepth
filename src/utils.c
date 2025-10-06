@@ -27,40 +27,59 @@ void clear_screen() {
     #endif
 }
 
-void get_string_input(char *buffer, int max_length) {
-    if (fgets(buffer, max_length, stdin) != NULL) {
-        // Supprime le '\n' à la fin si présent
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n') {
-            buffer[len - 1] = '\0';
+void get_string_input(char *buffer, int max_length) { // ici le buffer est vide
+    while (1) {  
+        int i = 0;
+        char c;
+        int too_long = 0; 
+        
+        while (1) {
+            c = getchar(); // getchar de stdin
+            
+            if (c == '\n') { 
+                break;
+            }
+            
+            if (i < max_length - 1) {  // Si on a encore de la place
+                buffer[i] = c;
+                i++;
+            } else {  
+                too_long = 1;
+            }
         }
-    } else {
-        buffer[0] = '\0'; // Chaîne vide en cas d'erreur
+        
+        buffer[i] = '\0';  
+        
+        if (too_long) {
+            printf(COLOR_RED "ERREUR: Le texte est trop long ! Maximum %d caractères autorisés.\n" COLOR_RESET, max_length - 1);
+            printf("Veuillez ressaisir: ");
+        } else {
+            break;
+        }
     }
 }
 
 int get_int_input(int min, int max) {
-    char buffer[MAX_INPUT_LENGTH];
-    int value;
-    char *endptr;
+    int number;
     
     while (1) {
         printf("Entrez un nombre entre %d et %d: ", min, max);
-        get_string_input(buffer, MAX_INPUT_LENGTH);
         
-        // Conversion en entier
-        value = strtol(buffer, &endptr, 10);
-        
-        // Vérification de la validité
-        if (*endptr == '\0' && value >= min && value <= max) {
-            return value;
+        if (scanf("%d", &number) == 1) { // entier bien lu 
+            while (getchar() != '\n');
+            
+            if (number >= min && number <= max) {
+                return number;  
+            } else {
+                printf(COLOR_RED "ERREUR: Le nombre doit être entre %d et %d !\n" COLOR_RESET, min, max);
+            }
+        } else {
+            printf(COLOR_RED "ERREUR: Veuillez entrer un nombre valide !\n" COLOR_RESET);
+            while (getchar() != '\n');
         }
-        
-        printf(COLOR_RED "%s" COLOR_RESET "\n", ERROR_INVALID_INPUT);
     }
 }
 
-// Lecture d'un caractère unique (pour les menus)
 char get_char_input() {
     char buffer[MAX_INPUT_LENGTH];
     get_string_input(buffer, MAX_INPUT_LENGTH);
@@ -82,10 +101,6 @@ void print_separator(char character, int length) {
 
 void print_error(const char *message) {
     printf(COLOR_RED "ERREUR: %s" COLOR_RESET "\n", message);
-}
-
-void print_info(const char *message) {
-    printf(COLOR_BLUE "INFO: %s" COLOR_RESET "\n", message);
 }
 
 void pause_screen() {

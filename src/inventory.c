@@ -356,5 +356,5 @@ void remove_item_from_inventory(Player *player, int index) {
         player->inventory[i] = player->inventory[i + 1];
     }
     
-    player->inventory_count--;
+    player->inventory_count--; // on regarde jamais le trou qui est tout a droite mtn
 }
