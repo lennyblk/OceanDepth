@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define SAVE_FILE_NAME "oceandepths_save.dat"
+#define SAVE_FILE_NAME "oceandepth_save.dat"
 
 int save_game(const Player *player, const Map *map, int game_time);
 
