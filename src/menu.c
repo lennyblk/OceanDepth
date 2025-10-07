@@ -393,11 +393,33 @@ void unlock_next_zone(Player *player, Map *map, int current_zone) {
     }
 }
 
-// Implémentations temporaires des fonctions manquantes
 void search_creatures(Player *player, Map *map) {
-    (void)player;
-    (void)map;
-    printf("Fonction search_creatures pas encore implémentée.\n");
+    (void)map; 
+    clear_screen();
+    printf(COLOR_CYAN "🔍 RECHERCHE DE CRÉATURES\n" COLOR_RESET);
+    print_separator('-', 60);
+    
+    if (player->oxygen < 10) {
+        printf(COLOR_RED "⚠️  Vous n'avez pas assez d'oxygène pour chercher des créatures !\n");
+        printf("Retournez à la surface pour vous reposer.\n" COLOR_RESET);
+        pause_screen();
+        return;
+    }
+
+    printf("Vous cherchez des créatures dans la zone %d...\n", player->current_zone);
+    
+    player->oxygen -= 10;
+    printf(COLOR_CYAN "(-10 💨 oxygène)\n" COLOR_RESET);
+
+    if (rand() % 2 == 0) {
+        int pearls = 2 + (player->current_zone * 2);
+        printf(COLOR_GREEN "\n✨ Vous avez trouvé une créature !\n");
+        printf("Vous gagnez %d perles !\n" COLOR_RESET, pearls);
+        player->pearls += pearls;
+    } else {
+        printf(COLOR_YELLOW "\nOops ! Vous n'avez rien trouvé cette fois-ci...\n" COLOR_RESET);
+    }
+
     pause_screen();
 }
 
