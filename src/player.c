@@ -39,6 +39,23 @@ void player_init_with_name(Player *player, const char *name) {
         strncpy(player->name, name, MAX_NAME_LENGTH - 1);
         player->name[MAX_NAME_LENGTH - 1] = '\0'; 
     }
+    
+    // ÉQUIPEMENT DE DÉPART
+    player->equipped_weapon.type = WEAPON_RUSTY_HARPOON;
+    strcpy(player->equipped_weapon.name, "Harpon rouillé");
+    player->equipped_weapon.attack_min = 8;
+    player->equipped_weapon.attack_max = 12;
+    player->equipped_weapon.oxygen_cost_per_attack = 2;
+    player->equipped_weapon.defense_ignore = 0;
+    player->equipped_weapon.rarity = RARITY_COMMON;
+    
+    strcpy(player->equipped_armor.name, "Combinaison de base");
+    player->equipped_armor.defense = 3;
+    player->equipped_armor.oxygen_cost_per_turn = 1;
+    player->equipped_armor.rarity = RARITY_COMMON;
+    
+    // INVENTAIRE VIDE AU DÉMARRAGE
+    player->inventory_count = 0;
 }
 
 void player_display_stats(const Player *player) {

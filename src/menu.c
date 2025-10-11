@@ -7,6 +7,7 @@
 #include "../include/ascii_art.h"
 #include "../include/map.h"
 #include "../include/inventory.h"
+#include "../include/gear.h"
 
 void display_title_screen() {
     clear_screen();

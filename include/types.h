@@ -24,6 +24,8 @@ typedef enum {
     ITEM_HEALTH_KIT,
     ITEM_STIMULANT,
     ITEM_ANTIDOTE,
+    ITEM_WEAPON,       
+    ITEM_ARMOR,        
     ITEM_COUNT
 } ItemType;
 
@@ -99,14 +101,17 @@ typedef struct {
 
 // Objet consommable
 typedef struct {
-    ItemType type;
+    ItemType type;             
     char name[40];
     int quantity;
-    // effet de l'objet
+    
     int hp_restore;                  
     int oxygen_restore;
     int fatigue_reduce;
     int removes_effect;
+    
+    Weapon weapon_data;              
+    Armor armor_data;                
 } Item;
 
 // STRUCTURE DU JOUEUR =======================================================================================================
