@@ -7,6 +7,7 @@
 #include "../include/ascii_art.h"
 #include "../include/menu.h"
 #include "../include/map.h"
+#include "../include/inventory.h"
 
 #ifdef _WIN32
 #include <windows.h>
