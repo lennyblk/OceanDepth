@@ -61,10 +61,10 @@ int is_shop_unlocked(Player *player, Map *map) {
     (void)player;
     
     // Option 1 : Toujours débloqué (recommandé pour la zone de départ)
-    return 1;
+   // return 1;
     
     // Option 2 : Débloqué si au moins une zone est accessible
-    // return (player->zones_unlocked >= 0);
+    return (player->zones_unlocked >= 1);
 }
 
 const char* get_item_rarity_color(int price) {
