@@ -6,6 +6,7 @@
 #include "../include/constants.h"
 #include "../include/ascii_art.h"
 #include "../include/map.h"
+#include "../include/shop.h"
 #include "../include/inventory.h"
 #include "../include/gear.h"
 
@@ -72,7 +73,17 @@ void handle_menu_choice(int choice, Player *player, Map *map) {
             break;
             
         case 4: 
-            visit_shop(player);
+            if (is_shop_unlocked(player, map)) {
+                visit_shop(player);
+            } else {
+                clear_screen();
+                printf(COLOR_RED "🔒 LE MARCHÉ EST VERROUILLÉ\n" COLOR_RESET);
+                print_separator('-', 60);
+                printf("\nPour débloquer le marché, vous devez:\n");
+                printf(COLOR_YELLOW "→ Terminer toutes les destinations d'au moins une zone\n" COLOR_RESET);
+                printf("\nProgressez dans l'exploration pour accéder au marché !\n");
+                pause_screen();
+            }
             break;
             
         case 5: 
@@ -425,11 +436,6 @@ void search_creatures(Player *player, Map *map) {
     pause_screen();
 }
 
-void visit_shop(Player *player) {
-    (void)player;
-    printf("Fonction visit_shop pas encore implémentée.\n");
-    pause_screen();
-}
 
 void rest_at_surface(Player *player) {
     printf("Vous vous reposez en surface...\n");
