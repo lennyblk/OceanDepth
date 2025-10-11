@@ -5,6 +5,8 @@
 #include "../include/utils.h"
 #include "../include/constants.h"
 #include "../include/menu.h"
+#include "../include/ascii_art.h"
+
 
 void initialize_shop_items(ShopItem shop_items[], int *item_count) {
     *item_count = 0;
@@ -83,7 +85,7 @@ void display_shop_menu(Player *player) {
     
     while (1) {
         clear_screen();
-        
+        display_marchand_ascii();
         printf(COLOR_CYAN COLOR_BOLD);
         printf("╔════════════════════════════════════════════════════════════════════════════════════╗\n");
         printf("║                           🏪 MARCHE DU PLONGEUR 🏪                                 ║\n");
