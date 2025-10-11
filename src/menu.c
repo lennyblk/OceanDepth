@@ -6,6 +6,7 @@
 #include "../include/constants.h"
 #include "../include/ascii_art.h"
 #include "../include/map.h"
+#include "../include/shop.h"
 #include "../include/inventory.h"
 #include "../include/gear.h"
 
@@ -72,7 +73,17 @@ void handle_menu_choice(int choice, Player *player, Map *map) {
             break;
             
         case 4: 
-            visit_shop(player);
+            if (is_shop_unlocked(player, map)) {
+                visit_shop(player);
+            } else {
+                clear_screen();
+                printf(COLOR_RED "🔒 LE MARCHÉ EST VERROUILLÉ\n" COLOR_RESET);
+                print_separator('-', 60);
+                printf("\nPour débloquer le marché, vous devez:\n");
+                printf(COLOR_YELLOW "→ Terminer toutes les destinations d'au moins une zone\n" COLOR_RESET);
+                printf("\nProgressez dans l'exploration pour accéder au marché !\n");
+                pause_screen();
+            }
             break;
             
         case 5: 
@@ -395,19 +406,36 @@ void unlock_next_zone(Player *player, Map *map, int current_zone) {
     }
 }
 
-// Implémentations temporaires des fonctions manquantes
 void search_creatures(Player *player, Map *map) {
-    (void)player;
-    (void)map;
-    printf("Fonction search_creatures pas encore implémentée.\n");
+    (void)map; 
+    clear_screen();
+    printf(COLOR_CYAN "🔍 RECHERCHE DE CRÉATURES\n" COLOR_RESET);
+    print_separator('-', 60);
+    
+    if (player->oxygen < 10) {
+        printf(COLOR_RED "⚠️  Vous n'avez pas assez d'oxygène pour chercher des créatures !\n");
+        printf("Retournez à la surface pour vous reposer.\n" COLOR_RESET);
+        pause_screen();
+        return;
+    }
+
+    printf("Vous cherchez des créatures dans la zone %d...\n", player->current_zone);
+    
+    player->oxygen -= 10;
+    printf(COLOR_CYAN "(-10 💨 oxygène)\n" COLOR_RESET);
+
+    if (rand() % 2 == 0) {
+        int pearls = 2 + (player->current_zone * 2);
+        printf(COLOR_GREEN "\n✨ Vous avez trouvé une créature !\n");
+        printf("Vous gagnez %d perles !\n" COLOR_RESET, pearls);
+        player->pearls += pearls;
+    } else {
+        printf(COLOR_YELLOW "\nOops ! Vous n'avez rien trouvé cette fois-ci...\n" COLOR_RESET);
+    }
+
     pause_screen();
 }
 
-void visit_shop(Player *player) {
-    (void)player;
-    printf("Fonction visit_shop pas encore implémentée.\n");
-    pause_screen();
-}
 
 void rest_at_surface(Player *player) {
     printf("Vous vous reposez en surface...\n");
