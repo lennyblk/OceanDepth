@@ -317,27 +317,6 @@ void sell_treasures(Player *player) {
     pause_screen();
 }
 
-void manage_equipment(Player *player) {
-    clear_screen();
-    
-    printf(COLOR_CYAN COLOR_BOLD "🛡️ GESTION DE L'ÉQUIPEMENT\n" COLOR_RESET);
-    print_separator('=', 60);
-    
-    printf(COLOR_BOLD "═══ ÉQUIPEMENT ACTUEL ═══" COLOR_RESET "\n");
-    printf(COLOR_GREEN "Arme équipée:" COLOR_RESET " %s\n", player->equipped_weapon.name);
-    printf("  - Attaque: %d-%d\n", player->equipped_weapon.attack_min, player->equipped_weapon.attack_max);
-    printf("  - Coût oxygène/attaque: %d\n", player->equipped_weapon.oxygen_cost_per_attack);
-    
-    printf("\n");
-    printf(COLOR_GREEN "Armure équipée:" COLOR_RESET " %s\n", player->equipped_armor.name);
-    printf("  - Défense: +%d\n", player->equipped_armor.defense);
-    printf("  - Coût oxygène/tour: %d\n", player->equipped_armor.oxygen_cost_per_turn);
-    
-    printf("\n" COLOR_YELLOW "Note: La gestion avancée de l'équipement sera implémentée plus tard.\n" COLOR_RESET);
-    
-    pause_screen();
-}
-
 int calculate_inventory_weight(Player *player) {
     int weight = 0;
     for (int i = 0; i < player->inventory_count; i++) {
