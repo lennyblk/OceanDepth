@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 #include "../include/menu.h"
 #include "../include/player.h"
 #include "../include/utils.h"
@@ -7,11 +9,11 @@
 #include "../include/ascii_art.h"
 #include "../include/map.h"
 #include "../include/save.h"
+#include "../include/combat.h"
 
 void display_title_screen()
 {
     clear_screen();
-
     // ASCII Art du titre
     printf(COLOR_CYAN COLOR_BOLD);
     printf("  ███████╗ ██████╗███████╗ █████╗ ███╗   ██╗    ██████╗ ███████╗██████╗ ████████╗██╗  ██╗███████╗\n");
@@ -31,7 +33,6 @@ void display_title_screen()
 int display_main_menu(Player *player)
 {
     display_title_screen();
-
     // Affichage rapide des stats du joueur
     printf(COLOR_BOLD "Monster Slayer: " COLOR_RESET "%s | ", player->name);
     printf(COLOR_RED "❤ %d/%d" COLOR_RESET " | ", player->hp, player->max_hp);
@@ -208,10 +209,10 @@ void display_zone_map(Player *player, Map *map)
 
     printf(COLOR_BOLD "                    CARTOGRAPHIE OCÉANIQUE - SECTEUR PACIFIQUE\n" COLOR_RESET);
     print_separator('-', 80);
+        // Ligne de séparation
 
     for (int zone = 0; zone < 4; zone++)
     {
-        // Ligne de séparation
         printf("┌─────────┬─────────┬─────────┬─────────┐ ");
 
         if (zone == player->current_zone)
@@ -352,19 +353,22 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
 
         pause_screen();
 
-        // Combat contre toutes les créatures
-        bool victory = fight_all_monsters(player, zone, monsters_count);
+        int combat_result = fight_all_monsters(player, zone, monsters_count);
 
-        if (victory)
+        if (combat_result == 1)
         {
             mark_destination_cleared(map, zone, destination);
-
             give_zone_rewards(player, zone, destination);
 
             if (is_zone_completely_cleared(map, zone))
             {
                 unlock_next_zone(player, map, zone);
             }
+        }
+        else if (combat_result == -1)
+        {
+            printf("Vous avez été vaincu...\n");
+            player->hp = 0;
         }
     }
     else
@@ -527,19 +531,136 @@ void display_journal(Player *player)
     pause_screen();
 }
 
+void create_creatures_for_zone(Creature creatures[], int creature_count, int zone)
+{
+    CreatureType possible_types[CREATURE_COUNT];
+    int num_possible_types = 0;
+
+    switch (zone)
+    {
+    case 0:
+        possible_types[0] = CREATURE_JELLYFISH;
+        num_possible_types = 1;
+        break;
+    case 1:
+        possible_types[0] = CREATURE_JELLYFISH;
+        possible_types[1] = CREATURE_SWORDFISH;
+        possible_types[2] = CREATURE_GIANT_CRAB;
+        num_possible_types = 3;
+        break;
+    case 2:
+        possible_types[0] = CREATURE_SHARK;
+        possible_types[1] = CREATURE_KRAKEN;
+        possible_types[2] = CREATURE_SWORDFISH;
+        num_possible_types = 3;
+        break;
+    case 3:
+    default:
+        possible_types[0] = CREATURE_KRAKEN;
+        possible_types[1] = CREATURE_SHARK;
+        possible_types[2] = CREATURE_JELLYFISH;
+        possible_types[3] = CREATURE_SWORDFISH;
+        possible_types[4] = CREATURE_GIANT_CRAB;
+        num_possible_types = 5;
+        break;
+    }
+
+    for (int i = 0; i < creature_count; i++)
+    {
+        CreatureType type = possible_types[random_range(0, num_possible_types - 1)];
+
+        creatures[i].id = i;
+        creatures[i].is_alive = 1;
+        creatures[i].is_active = 1;
+        creatures[i].type = type;
+
+        int hp_bonus = zone * 10;
+        int atk_bonus = zone * 2;
+        int def_bonus = zone;
+
+        switch (type)
+        {
+        case CREATURE_KRAKEN:
+            strcpy(creatures[i].name, "Kraken");
+            creatures[i].hp_max = random_range(120, 180) + hp_bonus;
+            creatures[i].attack_min = 25 + atk_bonus;
+            creatures[i].attack_max = 40 + atk_bonus;
+            creatures[i].defense = 10 + def_bonus;
+            break;
+        case CREATURE_SHARK:
+            strcpy(creatures[i].name, "Requin");
+            creatures[i].hp_max = random_range(60, 100) + hp_bonus;
+            creatures[i].attack_min = 15 + atk_bonus;
+            creatures[i].attack_max = 25 + atk_bonus;
+            creatures[i].defense = 5 + def_bonus;
+            break;
+        case CREATURE_JELLYFISH:
+            strcpy(creatures[i].name, "Méduse");
+            creatures[i].hp_max = random_range(20, 40) + hp_bonus;
+            creatures[i].attack_min = 8 + atk_bonus;
+            creatures[i].attack_max = 15 + atk_bonus;
+            creatures[i].defense = 0 + def_bonus;
+            break;
+        case CREATURE_SWORDFISH:
+            strcpy(creatures[i].name, "Poisson-Épée");
+            creatures[i].hp_max = random_range(70, 90) + hp_bonus;
+            creatures[i].attack_min = 18 + atk_bonus;
+            creatures[i].attack_max = 28 + atk_bonus;
+            creatures[i].defense = 3 + def_bonus;
+            break;
+        case CREATURE_GIANT_CRAB:
+            strcpy(creatures[i].name, "Crabe Géant");
+            creatures[i].hp_max = random_range(80, 120) + hp_bonus;
+            creatures[i].attack_min = 12 + atk_bonus;
+            creatures[i].attack_max = 20 + atk_bonus;
+            creatures[i].defense = 15 + def_bonus;
+            break;
+        default:
+            strcpy(creatures[i].name, "Poisson Étrange");
+            creatures[i].hp_max = 30 + hp_bonus;
+            creatures[i].attack_min = 5 + atk_bonus;
+            creatures[i].attack_max = 10 + atk_bonus;
+            creatures[i].defense = 1 + def_bonus;
+            break;
+        }
+        creatures[i].hp_current = creatures[i].hp_max;
+    }
+}
+
 int fight_all_monsters(Player *player, int zone, int monsters_count)
 {
-    (void)player;
-    (void)zone;
-    printf("Combat contre %d créature(s)... (temporaire)\n", monsters_count);
-    printf("Vous gagnez le combat !\n");
-    pause_screen();
-    return 1; // Victoire
+    if (monsters_count > MAX_CREATURES_PER_ZONE)
+    {
+        monsters_count = MAX_CREATURES_PER_ZONE;
+    }
+
+    Creature creatures[MAX_CREATURES_PER_ZONE];
+    create_creatures_for_zone(creatures, monsters_count, zone);
+
+    int result = start_combat(player, creatures, monsters_count);
+
+    if (result == 1)
+    {
+        printf(COLOR_GREEN "VICTOIRE ! Vous avez vaincu toutes les créatures.\n" COLOR_RESET);
+        int exp_gain = monsters_count * (zone + 1) * 20;
+        player_add_experience(player, exp_gain);
+        return 1;
+    }
+    else
+    {
+        printf(COLOR_RED "DÉFAITE... Vous avez succombé aux profondeurs.\n" COLOR_RESET);
+        return -1;
+    }
 }
 
 void give_zone_rewards(Player *player, int zone, int destination)
 {
     int reward = (zone + 1) * (destination + 1) * 5;
-    player->pearls += reward;
-    printf(COLOR_YELLOW "✨ Vous gagnez %d perles !\n" COLOR_RESET, reward);
+    player_add_pearls(player, reward);
+
+    if (zone == 1 && destination == 1)
+    {
+        printf(COLOR_YELLOW "Vous avez trouvé un trésor dans l'épave !\n" COLOR_RESET);
+        player_add_pearls(player, 50);
+    }
 }

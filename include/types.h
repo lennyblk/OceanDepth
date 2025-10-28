@@ -133,6 +133,7 @@ typedef struct
     int max_hp;
     int oxygen;
     int max_oxygen;
+    int fatigue;
 
     int x;
     int y;
