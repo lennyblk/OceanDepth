@@ -8,6 +8,7 @@
 #include "../include/constants.h"
 #include "../include/ascii_art.h"
 #include "../include/map.h"
+#include "../include/save.h"
 #include "../include/combat.h"
 
 void display_title_screen()
@@ -57,7 +58,7 @@ int display_main_menu(Player *player)
     return (choice >= '0' && choice <= '9') ? (choice - '0') : -1;
 }
 
-void handle_menu_choice(int choice, Player *player, Map *map)
+void handle_menu_choice(int choice, Player *player, Map *map, int *game_time)
 {
     switch (choice)
     {
@@ -91,7 +92,7 @@ void handle_menu_choice(int choice, Player *player, Map *map)
         break;
 
     case 8:
-        save_game(player, map);
+        menu_save_game(player, map, *game_time);
         break;
 
     case 9:
@@ -136,7 +137,7 @@ void explore_map(Player *player, Map *map)
 
     switch (choice)
     {
-    case '1':
+    case '1': // Zone supérieure
         if (player->current_zone > 0)
         {
             player->current_zone--;
@@ -152,7 +153,7 @@ void explore_map(Player *player, Map *map)
         }
         break;
 
-    case '2':
+    case '2': // Zone inférieure
         if (player->current_zone < 3)
         {
             if (is_zone_unlocked(player, player->current_zone + 1))
@@ -182,7 +183,7 @@ void explore_map(Player *player, Map *map)
         explore_map(player, map);
         break;
 
-    case '0':
+    case '0': // Retour
         return;
 
     default:
@@ -223,6 +224,7 @@ void display_zone_map(Player *player, Map *map)
             printf(COLOR_RED "🔒 VERROUILLÉ" COLOR_RESET);
         }
         printf("\n");
+
         // Contenu de la zone
         printf("│");
         for (int col = 0; col < 4; col++)
@@ -243,6 +245,7 @@ void display_zone_map(Player *player, Map *map)
         }
         printf(" %s | %s\n", zone_names[zone], zone_depths[zone]);
 
+        // Ligne de fermeture
         printf("└─────────┴─────────┴─────────┴─────────┘\n");
     }
 
@@ -331,6 +334,7 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
         printf(COLOR_GREEN "Cette zone a déjà été nettoyée de ses créatures.\n" COLOR_RESET);
         printf("Vous pouvez chercher des ressources supplémentaires.\n\n");
 
+        // Petite récompense pour revisiter
         int bonus_pearls = 1 + rand() % 2;
         player->pearls += bonus_pearls;
         printf(COLOR_YELLOW "✨ Vous trouvez %d perle(s) supplémentaire(s) !\n" COLOR_RESET, bonus_pearls);
@@ -339,6 +343,7 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
         return;
     }
 
+    // Système de combat selon la zone
     int monsters_count = get_monsters_in_destination(zone, destination);
 
     if (monsters_count > 0)
@@ -369,6 +374,7 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
     else
     {
         printf(COLOR_GREEN "Cette zone est paisible, aucune créature hostile détectée.\n" COLOR_RESET);
+        // Zone sûre (comme les bases)
         if (zone == 0 && (destination == 0 || destination == 3))
         {
             printf("Vous pouvez vous reposer ici et récupérer votre oxygène.\n");
@@ -379,6 +385,8 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
 
     pause_screen();
 }
+
+// Fonctions utilitaires pour le système de zones
 
 int get_zone_depth(int zone)
 {
@@ -395,7 +403,8 @@ int is_zone_unlocked(Player *player, int zone)
 
 int is_destination_available(Map *map, int zone, int destination)
 {
-    (void)map;
+    (void)map; // Supprime l'avertissement de paramètre non utilisé
+    // Zone 2 a des destinations vides
     if (zone == 2 && (destination == 1 || destination == 3))
     {
         return false;
@@ -416,10 +425,11 @@ void mark_destination_cleared(Map *map, int zone, int destination)
 int get_monsters_in_destination(int zone, int destination)
 {
     int monsters[4][4] = {
-        {0, 2, 1, 0},
-        {3, 1, 5, 0},
-        {1, 0, 8, 0},
-        {5, 7, 10, 12}};
+        {0, 2, 1, 0},  // Surface: Base=0, Océan=2, Océan=1, Bateau=0
+        {3, 1, 5, 0},  // Zone 1: Récif=3, Épave=1, Algues=5, Grotte=0 (sûre)
+        {1, 0, 8, 0},  // Zone 2: Requin=1 (boss), Vide=0, Kraken=8, Vide=0
+        {5, 7, 10, 12} // Zone 3: Tous dangereux
+    };
 
     return monsters[zone][destination];
 }
@@ -438,7 +448,7 @@ int is_zone_completely_cleared(Map *map, int zone)
 
 void unlock_next_zone(Player *player, Map *map, int current_zone)
 {
-    (void)map;
+    (void)map; // Supprime l'avertissement de paramètre non utilisé
     if (current_zone + 1 < 4 && player->zones_unlocked <= current_zone)
     {
         player->zones_unlocked = current_zone + 1;
@@ -448,6 +458,7 @@ void unlock_next_zone(Player *player, Map *map, int current_zone)
     }
 }
 
+// Implémentations temporaires des fonctions manquantes
 void search_creatures(Player *player, Map *map)
 {
     (void)player;
@@ -486,11 +497,30 @@ void manage_equipment(Player *player)
     pause_screen();
 }
 
-void save_game(Player *player, Map *map)
+void menu_save_game(Player *player, Map *map, int game_time)
 {
-    (void)player;
-    (void)map;
-    printf("Fonction save_game pas encore implémentée.\n");
+    clear_screen();
+    printf(COLOR_CYAN COLOR_BOLD "💾 SAUVEGARDE DE LA PARTIE\n" COLOR_RESET);
+    print_separator('=', 60);
+
+    printf("\nVérification de la zone actuelle...\n");
+
+    if (save_game(player, map, game_time))
+    {
+        printf(COLOR_GREEN "\n✅ Partie sauvegardée avec succès !\n" COLOR_RESET);
+        printf("\nInformations sauvegardées:\n");
+        printf("  • Joueur: %s (Niveau %d)\n", player->name, player->level);
+        printf("  • Zone: %s\n", map->zones[map->current_zone_index].name);
+        printf("  • HP: %d/%d\n", player->hp, player->max_hp);
+        printf("  • Oxygène: %d/%d\n", player->oxygen, player->max_oxygen);
+        printf("  • Perles: %d\n", player->pearls);
+    }
+    else
+    {
+        printf(COLOR_RED "\n❌ Échec de la sauvegarde !\n" COLOR_RESET);
+        printf("Assurez-vous d'être dans une zone sécurisée.\n");
+    }
+
     pause_screen();
 }
 

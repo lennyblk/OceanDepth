@@ -6,7 +6,7 @@
 // Fonctions principales du menu
 void display_title_screen(void);
 int display_main_menu(Player *player);
-void handle_menu_choice(int choice, Player *player, Map *map);
+void handle_menu_choice(int choice, Player *player, Map *map, int *game_time);
 
 // Fonctions des options du menu principal
 void explore_map(Player *player, Map *map);
@@ -15,7 +15,7 @@ void visit_shop(Player *player);
 void rest_at_surface(Player *player);
 void manage_inventory(Player *player);
 void manage_equipment(Player *player);
-void save_game(Player *player, Map *map);
+void menu_save_game(Player *player, Map *map, int game_time);
 void display_journal(Player *player);
 
 // Fonctions du système de carte et navigation
