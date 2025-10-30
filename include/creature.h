@@ -4,7 +4,7 @@
 #include "types.h"
 #include <stddef.h>
 
-Creature create_creature(CreatureType type);
+Creature create_creature(CreatureType type, int zone_level);
 
 void generate_creatures(int zone_depth, Creature creature_array[], size_t array_size, size_t *generated_count);
 

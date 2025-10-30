@@ -7,7 +7,53 @@
 #include "../include/types.h"
 #include "../include/ascii_art.h"
 
-int get_zone_from_depth(int depth); // je declare la parce que j'avais un avertissement de con
+int get_zone_from_depth(int depth);
+
+void player_init_skills(Player *player)
+{
+    if (player == NULL)
+    {
+        return;
+    }
+
+    Skill *skill_breath = &player->skills[SKILL_EXTENDED_BREATH];
+    skill_breath->type = SKILL_EXTENDED_BREATH;
+    strncpy(skill_breath->name, "Apnée Prolongée", 39);
+    skill_breath->oxygen_cost = 0;
+    skill_breath->oxygen_restore = 20;
+    skill_breath->cooldown_max = 4;
+    skill_breath->cooldown_current = 0;
+    skill_breath->is_unlocked = 1;
+
+    Skill *skill_discharge = &player->skills[SKILL_ELECTRIC_DISCHARGE];
+    skill_discharge->type = SKILL_ELECTRIC_DISCHARGE;
+    strncpy(skill_discharge->name, "Décharge Électrique", 39);
+    skill_discharge->oxygen_cost = 18;
+    skill_discharge->damage_min = 20;
+    skill_discharge->damage_max = 30;
+    skill_discharge->hits_all_enemies = 1;
+    skill_discharge->cooldown_max = 5;
+    skill_discharge->cooldown_current = 0;
+    skill_discharge->is_unlocked = 1;
+
+    Skill *skill_comm = &player->skills[SKILL_MARINE_COMMUNICATION];
+    skill_comm->type = SKILL_MARINE_COMMUNICATION;
+    strncpy(skill_comm->name, "Communication Marine", 39);
+    skill_comm->oxygen_cost = 8;
+    skill_comm->pacifies_enemy = 1;
+    skill_comm->cooldown_max = 3;
+    skill_comm->cooldown_current = 0;
+    skill_comm->is_unlocked = 0;
+
+    Skill *skill_vortex = &player->skills[SKILL_WATER_VORTEX];
+    skill_vortex->type = SKILL_WATER_VORTEX;
+    strncpy(skill_vortex->name, "Tourbillon Aquatique", 39);
+    skill_vortex->oxygen_cost = 22;
+    skill_vortex->slows_enemies = 1;
+    skill_vortex->cooldown_max = 6;
+    skill_vortex->cooldown_current = 0;
+    skill_vortex->is_unlocked = 0;
+}
 
 void player_init(Player *player)
 {
@@ -28,8 +74,10 @@ void player_init(Player *player)
     player->x = 0;
     player->y = 0;
     player->current_zone = SURFACE_DEPTH;
-
     strcpy(player->name, "Monster Slayer");
+    player->zones_unlocked = 1;
+    player->fatigue = 0;
+    player->inventory_count = 0;
 
     strcpy(player->equipped_weapon.name, "Harpon Rouillé");
     player->equipped_weapon.type = WEAPON_RUSTY_HARPOON;
@@ -48,6 +96,8 @@ void player_init(Player *player)
     player->is_poisoned = 0;
     player->paralysis_turns_left = 0;
     player->poison_turns_left = 0;
+
+    player_init_skills(player);
 
     print_success("Joueur initialisé avec succès!");
 }
@@ -261,7 +311,7 @@ int player_is_alive(const Player *player)
         return 0;
     }
 
-    return (player->hp > 0 && player->oxygen > 0) ? 1 : 0;
+    return (player->hp > 0) ? 1 : 0;
 }
 
 void player_add_experience(Player *player, int exp)
@@ -312,12 +362,35 @@ void player_add_pearls(Player *player, int pearls)
            player->name, pearls, player->pearls);
 }
 
+void player_update_cooldowns(Player *player)
+{
+    if (player == NULL)
+    {
+        return;
+    }
+
+    for (int i = 0; i < SKILL_COUNT; i++)
+    {
+        if (player->skills[i].cooldown_current > 0)
+        {
+            player->skills[i].cooldown_current--;
+        }
+    }
+}
+
 int get_zone_from_depth(int depth)
 {
     if (depth <= 0)
+    {
         return 0; // Surface
+    }
     if (depth <= 50)
+    {
         return 1; // Zone 1
+    }
     if (depth <= 150)
+    {
         return 2; // Zone 2
-    return 3;     // Zone 3 (abysse)
+    }
+    return 3; // Zone 3 (abysse) pour toutes les autres profondeurs > 150
+}

@@ -121,8 +121,27 @@ typedef struct
     int removes_effect;
 } Item;
 
-// STRUCTURE DU JOUEUR =======================================================================================================
+// STRUCTURE SKILL =======================================================================================================
+typedef struct
+{
+    SkillType type;
+    char name[40];
+    char description[100];
+    int oxygen_cost;
+    int cooldown_max;
+    int cooldown_current;
+    int is_unlocked;
 
+    // Effets de la compétence
+    int damage_min;
+    int damage_max;
+    int oxygen_restore;
+    int hits_all_enemies;
+    int pacifies_enemy;
+    int slows_enemies;
+} Skill;
+
+// STRUCTURE DU JOUEUR =======================================================================================================
 typedef struct
 {
     char name[50];
@@ -148,33 +167,13 @@ typedef struct
 
     Item inventory[4];
     int inventory_count;
+    Skill skills[SKILL_COUNT];
 
     int is_paralyzed;
     int is_poisoned;
     int paralysis_turns_left;
     int poison_turns_left;
 } Player;
-
-// STRUCTURE SKILL =======================================================================================================
-
-typedef struct
-{
-    SkillType type;
-    char name[40];
-    char description[100];
-    int oxygen_cost;
-    int cooldown_max;
-    int cooldown_current;
-    int is_unlocked;
-
-    // Effets de la compétence
-    int damage_min;
-    int damage_max;
-    int oxygen_restore;
-    int hits_all_enemies;
-    int pacifies_enemy;
-    int slows_enemies;
-} Skill;
 
 // STRUCTURE ZONE =======================================================================================================
 typedef struct
@@ -212,7 +211,6 @@ typedef struct
 } Zone;
 
 // STRUCTURE MAP =======================================================================================================
-
 typedef struct
 {
     Zone zones[10];
@@ -221,7 +219,6 @@ typedef struct
 } Map;
 
 // STRUCTURE SAVE =======================================================================================================
-
 typedef struct
 {
     Player player;
@@ -231,7 +228,6 @@ typedef struct
 } SaveData;
 
 // STRUCTURE COMBAT =======================================================================================================
-
 typedef struct
 {
     Player *player;

@@ -14,7 +14,7 @@
 #include <windows.h>
 #endif
 
-int main()
+int main(void)
 {
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
@@ -22,13 +22,15 @@ int main()
 
     init_random();
 
-    Player *player = malloc(sizeof(Player));
-    Map *map = malloc(sizeof(Map));
     int game_time = 0;
+    Player *player = calloc(1, sizeof(Player));
+    Map *map = calloc(1, sizeof(Map));
 
-    if (!player || !map)
+    if (player == NULL || map == NULL)
     {
-        printf("Erreur d'allocation mémoire !");
+        fprintf(stderr, "Erreur d'allocation mémoire !\n");
+        free(player);
+        free(map);
         return 1;
     }
 
@@ -91,11 +93,11 @@ int main()
         initialize_game(player, map);
     }
 
-    while (player_is_alive(player))
+    int game_running = 1;
+    while (player_is_alive(player) && game_running == 1)
     {
         int choice = display_main_menu(player);
-        handle_menu_choice(choice, player, map, &game_time);
-        game_time++;
+        game_running = handle_menu_choice(choice, player, map, &game_time);
 
         if (player->oxygen <= 0)
         {
@@ -114,10 +116,17 @@ int main()
             printf("\nTemps de jeu: %d tours\n", game_time);
             break;
         }
+
+        if (game_running == 1)
+        {
+            game_time++;
+        }
     }
 
     free(player);
     free(map);
+
+    printf("\nFin du jeu.\n");
 
     return 0;
 }
