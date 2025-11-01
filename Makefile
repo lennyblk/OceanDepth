@@ -3,8 +3,8 @@ CFLAGS = -std=c11 -O2 -Wall -Wextra -Iinclude
 DEBUG_CFLAGS = -std=c11 -g -Wall -Wextra -Iinclude
 SRCDIR = src
 SRCS = $(wildcard $(SRCDIR)/*.c)
-TARGET = OceanDepths.exe
-DEBUG_TARGET = OceanDepths_debug.exe
+TARGET = OceanDepth.exe
+DEBUG_TARGET = OceanDepth_debug.exe
 
 .PHONY: all clean run debug valgrind
 
