@@ -199,3 +199,73 @@ void print_title(const char *title)
     (void)printf(COLOR_CYAN COLOR_BOLD "  %s  " COLOR_RESET "\n", title);
     print_separator('=', 60);
 }
+
+void display_health_bar(int current, int max, int bar_length)
+{
+    if (max <= 0)
+        return;
+
+    float percentage = (float)current / (float)max;
+    int filled = (int)(percentage * bar_length);
+
+    // Choix de la couleur selon le pourcentage
+    const char *color;
+    if (percentage > 0.6f)
+        color = COLOR_GREEN;
+    else if (percentage > 0.3f)
+        color = COLOR_YELLOW;
+    else
+        color = COLOR_RED;
+
+    printf("[%s", color);
+
+    // Affichage de la partie remplie
+    for (int i = 0; i < filled; i++)
+    {
+        printf("█");
+    }
+
+    // Affichage de la partie vide
+    printf(COLOR_RESET);
+    for (int i = filled; i < bar_length; i++)
+    {
+        printf("░");
+    }
+
+    printf("]");
+}
+
+void display_oxygen_bar(int current, int max, int bar_length)
+{
+    if (max <= 0)
+        return;
+
+    float percentage = (float)current / (float)max;
+    int filled = (int)(percentage * bar_length);
+
+    // Choix de la couleur selon le pourcentage
+    const char *color;
+    if (percentage > 0.5f)
+        color = COLOR_CYAN;
+    else if (percentage > 0.2f)
+        color = COLOR_YELLOW;
+    else
+        color = COLOR_RED;
+
+    printf("[%s", color);
+
+    // Affichage de la partie remplie
+    for (int i = 0; i < filled; i++)
+    {
+        printf("█");
+    }
+
+    // Affichage de la partie vide
+    printf(COLOR_RESET);
+    for (int i = filled; i < bar_length; i++)
+    {
+        printf("░");
+    }
+
+    printf("]");
+}

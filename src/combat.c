@@ -6,6 +6,8 @@
 #include "../include/utils.h"
 #include "../include/player.h"
 #include "../include/constants.h"
+#include "../include/creature.h"
+#include "../include/ascii_art.h"
 
 static int compare_creatures_by_speed(const void *a, const void *b)
 {
@@ -223,31 +225,56 @@ void display_combat_status(const Player *player, const Creature creatures[], int
     assert(player != NULL);
     assert(creatures != NULL);
 
-    printf("--- PLONGEUR ---\n");
-    printf("Vie: %d/%d | Oxygène: %d/%d | Fatigue: %d/5\n",
-           player->hp, player->max_hp, player->oxygen, player->max_oxygen, player->fatigue);
-
+    display_player_ascii();
+    
+    printf("\n");
+    printf(COLOR_CYAN "| PLONGEUR: %s (Niveau %d)" COLOR_RESET, player->name, player->level);
+    printf("\n");
+    print_separator('-', 60);
+    
+    // Barre de vie du joueur
+    printf("| " COLOR_BOLD "PV:  " COLOR_RESET);
+    display_health_bar(player->hp, player->max_hp, 30);
+    printf(" %d/%d\n", player->hp, player->max_hp);
+    
+    // Barre d'oxygène du joueur
+    printf("| " COLOR_BOLD "O2:  " COLOR_RESET);
+    display_oxygen_bar(player->oxygen, player->max_oxygen, 30);
+    printf(" %d/%d\n", player->oxygen, player->max_oxygen);
+    
     if (player->is_paralyzed)
     {
-        printf(COLOR_YELLOW "[PARALYSÉ: %d tour(s)]\n" COLOR_RESET, player->paralysis_turns_left);
+        printf("| " COLOR_YELLOW "* PARALYSE (%d tour)" COLOR_RESET "\n", player->paralysis_turns_left);
     }
-    print_separator('=', 50);
-    printf("--- CRÉATURES HOSTILES ---\n");
+    
+    print_separator('=', 60);
+    printf("\n");
+
+    // Affichage des créatures avec leurs ASCII arts
+    printf(COLOR_RED "| ADVERSAIRES:" COLOR_RESET "\n");
+    print_separator('-', 60);
+    
     for (int i = 0; i < creature_count; i++)
     {
         if (creatures[i].is_alive)
         {
-            printf("[%d] %s (PV: %d/%d)\n", i + 1, creatures[i].name, creatures[i].hp_current, creatures[i].hp_max);
+            // Affichage de l'ASCII art de la créature
+            printf("\n");
+            display_creature_ascii(creatures[i].type);
+            
+            printf("\n| [%d] %s %s\n", i + 1, get_creature_emoji(creatures[i].type), creatures[i].name);
+            printf("|     " COLOR_BOLD "PV:  " COLOR_RESET);
+            display_health_bar(creatures[i].hp_current, creatures[i].hp_max, 25);
+            printf(" %d/%d\n", creatures[i].hp_current, creatures[i].hp_max);
+            
+            if (i < creature_count - 1 && creatures[i + 1].is_alive)
+            {
+                printf("|\n");
+            }
         }
     }
-    print_separator('=', 50);
-}
-
-int get_player_attacks_per_turn(const Player *player)
-{
-    assert(player != NULL);
-    // Le nombre d'actions sera déterminé dynamiquement dans player_turn
-    return 1;
+    
+    print_separator('=', 60);
 }
 
 int player_turn(Player *player, Creature creatures[], int creature_count)
@@ -260,8 +287,7 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
 
     while (attacks_left > 0)
     {
-        if (check_combat_end(player, creatures, creature_count) != 0)
-            return 1;
+        if (check_combat_end(player, creatures, creature_count) != 0) return 1;
 
         display_combat_menu(attacks_left);
         char choice = get_char_input();
@@ -401,12 +427,16 @@ int check_combat_end(const Player *player, const Creature creatures[], int creat
 
 void display_combat_menu(int attacks_left)
 {
-    printf("\nActions disponibles (%d restantes) :\n", attacks_left);
-    printf("1 - Attaquer avec %s\n", "Harpon");
-    printf("2 - Utiliser compétence marine\n");
-    printf("3 - Consommer objet\n");
-    printf("4 - Terminer le tour\n");
-    printf("> ");
+    printf("\n");
+    print_separator('-', 60);
+    printf(COLOR_YELLOW "| Actions disponibles (%d restantes)" COLOR_RESET "\n", attacks_left);
+    print_separator('-', 60);
+    printf("| [1] Attaquer avec votre harpon\n");
+    printf("| [2] Utiliser une competence marine\n");
+    printf("| [3] Consommer un objet\n");
+    printf("| [4] Terminer le tour\n");
+    print_separator('-', 60);
+    printf(COLOR_BOLD ">> Votre choix: " COLOR_RESET);
 }
 
 Creature *select_target(Creature creatures[], int creature_count)

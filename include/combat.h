@@ -23,6 +23,5 @@ int check_combat_end(const Player *player, const Creature creatures[], int creat
 void display_combat_menu(int attacks_left);
 Creature *select_target(Creature creatures[], int creature_count);
 int count_alive_creatures(const Creature creatures[], int creature_count);
-int get_player_attacks_per_turn(const Player *player);
 
 #endif
