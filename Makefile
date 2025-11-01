@@ -1,25 +1,27 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -g -I include
-SRC = $(wildcard src/*.c)
-OBJDIR = obj
-OBJ = $(patsubst src/%.c,$(OBJDIR)/%.o,$(SRC))
-EXEC = oceandepths.exe
+CFLAGS = -std=c11 -O2 -Wall -Wextra -Iinclude
+DEBUG_CFLAGS = -std=c11 -g -Wall -Wextra -Iinclude
+SRCDIR = src
+SRCS = $(wildcard $(SRCDIR)/*.c)
+TARGET = OceanDepth.exe
+DEBUG_TARGET = OceanDepth_debug.exe
 
-all: $(EXEC)
+.PHONY: all clean run debug valgrind
 
-$(EXEC): $(OBJ)
-	$(CC) -o $@ $^
+all: $(TARGET)
 
-$(OBJDIR)/%.o: src/%.c
-	@if not exist $(OBJDIR) mkdir $(OBJDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET):
+	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET)
+
+$(DEBUG_TARGET):
+	$(CC) $(DEBUG_CFLAGS) $(SRCS) -o $(DEBUG_TARGET)
+
+valgrind: $(DEBUG_TARGET)
+	@echo "Exécution de Valgrind sur $(DEBUG_TARGET) pour vérifier les erreurs de mémoire. Le rapport est sauvegardé dans valgrind.log."
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.log ./$(DEBUG_TARGET)
+
+run: all
+	@./$(TARGET)
 
 clean:
-	@if exist $(OBJDIR) rmdir /S /Q $(OBJDIR)
-	@if exist $(EXEC) del $(EXEC)
-
-valgrind: $(EXEC)
-	@echo "Valgrind is not natively available on Windows."
-	@echo "Run under WSL or Linux for memory checking."
-
-.PHONY: all clean valgrind
+	@rm -f $(TARGET) $(DEBUG_TARGET) $(SRCDIR)/*.o
