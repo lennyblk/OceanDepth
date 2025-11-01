@@ -18,7 +18,7 @@ static int compare_creatures_by_speed(const void *a, const void *b)
 static void handle_kraken_attack(Player *player, Creature *creature)
 {
     int damage = 0;
-    int oxygen_drain = random_range(1, 2);
+    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
 
     printf(COLOR_MAGENTA "Étreinte tentaculaire du Kraken !\n" COLOR_RESET);
     damage = calculate_creature_damage(creature, player);
@@ -36,13 +36,13 @@ static void handle_kraken_attack(Player *player, Creature *creature)
 
 static void handle_shark_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = random_range(1, 2);
+    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
     int damage = calculate_creature_damage(creature, player);
 
     if (creature->hp_current < (creature->hp_max / 2))
     {
         printf(COLOR_RED "Frénésie sanguinaire du Requin !\n" COLOR_RESET);
-        damage = (int)((float)damage * 1.30f);
+        damage = (int)((float)damage * 1.20f);  // Réduit de 1.30 à 1.20
     }
     printf("%s attaque ! Vous perdez %d PV.\n", creature->name, damage);
     player_take_damage(player, damage);
@@ -51,23 +51,34 @@ static void handle_shark_attack(Player *player, Creature *creature)
 
 static void handle_jellyfish_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = random_range(1, 2);
-    printf(COLOR_CYAN "Piqûre paralysante de la Méduse !\n" COLOR_RESET);
-    int damage = calculate_creature_damage(creature, player);
-    player_take_damage(player, damage);
-    player_use_oxygen(player, oxygen_drain);
-
-    if (!player->is_paralyzed)
+    int oxygen_drain = 1;
+    
+    // Vérifier si le joueur est déjà paralysé OU si cette méduse a déjà appliqué son effet
+    if (!player->is_paralyzed && creature->effect_duration == 0)
     {
+        printf(COLOR_CYAN "Piqûre paralysante de la Méduse !\n" COLOR_RESET);
+        int damage = calculate_creature_damage(creature, player);
+        player_take_damage(player, damage);
+        player_use_oxygen(player, oxygen_drain);
+        
         player->is_paralyzed = 1;
-        player->paralysis_turns_left = 2;
+        player->paralysis_turns_left = 1;
+        creature->effect_duration = 1;  // Marquer que l'effet a été utilisé
         printf(COLOR_YELLOW "Vous êtes paralysé pour 1 tour !\n" COLOR_RESET);
+    }
+    else
+    {
+        // Attaque normale sans effet de statut
+        printf(COLOR_CYAN "La Méduse vous frappe !\n" COLOR_RESET);
+        int damage = calculate_creature_damage(creature, player);
+        player_take_damage(player, damage);
+        player_use_oxygen(player, oxygen_drain);
     }
 }
 
 static void handle_swordfish_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = random_range(1, 2);
+    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
     printf(COLOR_BLUE "Charge perforante du Poisson-Épée !\n" COLOR_RESET);
     int defense_ignored = 2;
     int attack_power = random_range(creature->attack_min, creature->attack_max);
@@ -80,7 +91,7 @@ static void handle_swordfish_attack(Player *player, Creature *creature)
 
 static void handle_default_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = random_range(1, 2);
+    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
     int damage = calculate_creature_damage(creature, player);
     printf("%s attaque ! Vous perdez %d PV.\n", creature->name, damage);
     player_take_damage(player, damage);
@@ -188,13 +199,13 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
         if (combat_result != 0)
             break;
 
-        int oxygen_loss = random_range(2, 5) + (player->current_zone * 2);
+        int oxygen_loss = random_range(1, 3) + player->current_zone;  // Réduit de (2, 5) + zone*2 à (1, 3) + zone
         player_use_oxygen(player, oxygen_loss);
         if (player->oxygen <= 0)
         {
             printf(COLOR_RED "Vous n'avez plus d'oxygène !\n" COLOR_RESET);
             if (player_is_alive(player))
-                player_take_damage(player, 5);
+                player_take_damage(player, 3);  // Réduit de 5 à 3
         }
 
         if (player->fatigue < 5)
@@ -232,12 +243,20 @@ void display_combat_status(const Player *player, const Creature creatures[], int
     print_separator('=', 50);
 }
 
+int get_player_attacks_per_turn(const Player *player)
+{
+    assert(player != NULL);
+    // Le nombre d'actions sera déterminé dynamiquement dans player_turn
+    return 1;
+}
+
 int player_turn(Player *player, Creature creatures[], int creature_count)
 {
     assert(player != NULL);
     assert(creatures != NULL);
 
-    int attacks_left = get_player_attacks_per_turn(player);
+    // Le joueur a autant d'actions que de créatures vivantes
+    int attacks_left = count_alive_creatures(creatures, creature_count);
 
     while (attacks_left > 0)
     {
@@ -321,16 +340,6 @@ void creatures_turn(Player *player, Creature creatures[], int creature_count)
     }
 }
 
-int get_player_attacks_per_turn(const Player *player)
-{
-    assert(player != NULL);
-    if (player->fatigue <= 1)
-        return 3;
-    if (player->fatigue <= 3)
-        return 2;
-    return 1;
-}
-
 int attack_creature(Player *player, Creature *target)
 {
     assert(player != NULL);
@@ -363,7 +372,7 @@ int calculate_player_damage(const Player *player, const Creature *target)
     if (target->type == CREATURE_GIANT_CRAB)
     {
         printf(COLOR_BLUE "La Carapace Durcie du Crabe réduit les dégâts !\n" COLOR_RESET);
-        damage = (int)((float)damage * 0.80f);
+        damage = (int)((float)damage * 0.85f); 
     }
     return (damage > 0) ? damage : 1;
 }

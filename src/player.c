@@ -63,10 +63,10 @@ void player_init(Player *player)
         return;
     }
 
-    player->hp = STARTING_HP;
-    player->max_hp = STARTING_HP;
-    player->oxygen = STARTING_OXYGEN;
-    player->max_oxygen = STARTING_OXYGEN;
+    player->hp = 120;  
+    player->max_hp = 120;
+    player->oxygen = 120;  
+    player->max_oxygen = 120;
     player->pearls = STARTING_PEARLS;
     player->experience = STARTING_EXPERIENCE;
     player->level = STARTING_LEVEL;
@@ -81,15 +81,15 @@ void player_init(Player *player)
 
     strcpy(player->equipped_weapon.name, "Harpon Rouillé");
     player->equipped_weapon.type = WEAPON_RUSTY_HARPOON;
-    player->equipped_weapon.attack_min = 12;
-    player->equipped_weapon.attack_max = 18;
-    player->equipped_weapon.oxygen_cost_per_attack = 2;
+    player->equipped_weapon.attack_min = 18;  
+    player->equipped_weapon.attack_max = 25;  
+    player->equipped_weapon.oxygen_cost_per_attack = 1; 
     player->equipped_weapon.defense_ignore = 0;
     player->equipped_weapon.rarity = RARITY_COMMON;
 
     strcpy(player->equipped_armor.name, "Néoprène Basic");
-    player->equipped_armor.defense = 5;
-    player->equipped_armor.oxygen_cost_per_turn = 1;
+    player->equipped_armor.defense = 8; 
+    player->equipped_armor.oxygen_cost_per_turn = 0; 
     player->equipped_armor.rarity = RARITY_COMMON;
 
     player->is_paralyzed = 0;
@@ -296,8 +296,8 @@ void player_move(Player *player, int delta_x, int delta_y)
         player->current_zone = 0;
     }
 
-    // Consommation d'oxygène selon la zone
-    int oxygen_cost = 1 + (player->current_zone * 10 / 100);
+    // Consommation d'oxygène réduite
+    int oxygen_cost = 1 + (player->current_zone * 5 / 100);  // Réduit de 10 à 5
     player_use_oxygen(player, oxygen_cost);
 
     printf(COLOR_BLUE "%s se déplace à la position (%d, %d) - Zone: %d" COLOR_RESET "\n",
@@ -332,8 +332,8 @@ void player_add_experience(Player *player, int exp)
         player->level++;
         player->experience -= required_exp;
 
-        int hp_bonus = 10;
-        int oxygen_bonus = 5;
+        int hp_bonus = 15;  
+        int oxygen_bonus = 10; 
 
         player->max_hp += hp_bonus;
         player->hp = player->max_hp;
