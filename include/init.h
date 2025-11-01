@@ -1,8 +1,4 @@
-#ifndef INIT_H
-#define INIT_H
+#include "player.h"
+#include "map.h"
 
-#include "types.h"
-
-void initialize_game(Player *player, Map *map);
-
-#endif
+void initialize_game(Player *player, Map *map); 
