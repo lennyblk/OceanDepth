@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c99 -g -I include
 SRC = $(wildcard src/*.c)
 OBJDIR = obj
 OBJ = $(patsubst src/%.c,$(OBJDIR)/%.o,$(SRC))
-EXEC = oceandepths.exe
+EXEC = oceandepth.exe
 
 all: $(EXEC)
 
