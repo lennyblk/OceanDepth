@@ -12,101 +12,6 @@
 #include "../include/save.h"
 #include "../include/creature.h"
 
-static int get_possible_creature_types(int zone, CreatureType possible_types[])
-{
-    int num_possible_types = 0;
-    switch (zone)
-    {
-    case 0:
-        possible_types[0] = CREATURE_JELLYFISH;
-        num_possible_types = 1;
-        break;
-    case 1:
-        possible_types[0] = CREATURE_JELLYFISH;
-        possible_types[1] = CREATURE_SWORDFISH;
-        possible_types[2] = CREATURE_GIANT_CRAB;
-        num_possible_types = 3;
-        break;
-    case 2:
-        possible_types[0] = CREATURE_SHARK;
-        possible_types[1] = CREATURE_SWORDFISH;
-        possible_types[2] = CREATURE_KRAKEN;
-        num_possible_types = 3;
-        break;
-    case 3:
-    default:
-        possible_types[0] = CREATURE_KRAKEN;
-        possible_types[1] = CREATURE_SHARK;
-        possible_types[3] = CREATURE_SWORDFISH;
-        possible_types[4] = CREATURE_GIANT_CRAB;
-        num_possible_types = 4;
-        break;
-    }
-    return num_possible_types;
-}
-
-static void set_creature_base_stats(Creature *creature, int zone)
-{
-    int hp_bonus = zone * 15;
-    int atk_bonus = zone * 3;
-    int def_bonus = zone * 2;
-
-    switch (creature->type)
-    {
-    case CREATURE_KRAKEN:
-        strcpy(creature->name, "Kraken");
-        creature->hp_max = random_range(150, 200) + hp_bonus;
-        creature->attack_min = 20 + atk_bonus;
-        creature->attack_max = 35 + atk_bonus;
-        creature->defense = 12 + def_bonus;
-        creature->speed = 5;
-        break;
-    case CREATURE_SHARK:
-        strcpy(creature->name, "Requin Affamé");
-        creature->hp_max = random_range(80, 120) + hp_bonus;
-        creature->attack_min = 18 + atk_bonus;
-        creature->attack_max = 28 + atk_bonus;
-        creature->defense = 6 + def_bonus;
-        creature->speed = 15;
-        break;
-    case CREATURE_JELLYFISH:
-        strcpy(creature->name, "Méduse Électrique");
-        creature->hp_max = random_range(30, 50) + hp_bonus;
-        creature->attack_min = 10 + atk_bonus;
-        creature->attack_max = 16 + atk_bonus;
-        creature->defense = 2 + def_bonus;
-        creature->speed = 8;
-        break;
-    case CREATURE_SWORDFISH:
-        strcpy(creature->name, "Espadon Vif");
-        creature->hp_max = random_range(70, 100) + hp_bonus;
-        creature->attack_min = 20 + atk_bonus;
-        creature->attack_max = 30 + atk_bonus;
-        creature->defense = 5 + def_bonus;
-        creature->speed = 12;
-        break;
-    case CREATURE_GIANT_CRAB:
-        strcpy(creature->name, "Crabe Carapace");
-        creature->hp_max = random_range(100, 150) + hp_bonus;
-        creature->attack_min = 15 + atk_bonus;
-        creature->attack_max = 22 + atk_bonus;
-        creature->defense = 20 + def_bonus;
-        creature->speed = 3;
-        break;
-    default:
-        strcpy(creature->name, "Poisson Étrange");
-        creature->hp_max = 50 + hp_bonus;
-        creature->attack_min = 8 + atk_bonus;
-        creature->attack_max = 12 + atk_bonus;
-        creature->defense = 3 + def_bonus;
-        creature->speed = 0;
-        break;
-    }
-    creature->hp_current = creature->hp_max;
-    creature->effect_duration = 0;
-    creature->special_effect = EFFECT_NONE;
-}
-
 static void display_map_header(void)
 {
     printf(COLOR_BOLD "                    CARTOGRAPHIE OCÉANIQUE - SECTEUR PACIFIQUE\n" COLOR_RESET);
@@ -200,12 +105,12 @@ void display_title_screen(void)
     clear_screen();
     // ASCII Art du titre
     printf(COLOR_CYAN COLOR_BOLD);
-    printf("  ███████╗ ██████╗███████╗ █████╗ ███╗   ██╗    ██████╗ ███████╗██████╗ ████████╗██╗  ██╗███████╗\n");
-    printf("  ██╔═══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║    ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║██╔════╝\n");
-    printf("  ██║   ██║██║     █████╗  ███████║██╔██╗ ██║    ██║  ██║█████╗  ██████╔╝   ██║   ███████║███████╗\n");
-    printf("  ██║   ██║██║     ██╔══╝  ██╔══██║██║╚██╗██║    ██║  ██║██╔══╝  ██╔═══╝    ██║   ██╔══██║╚════██║\n");
-    printf("  ╚██████╔╝╚██████╗███████╗██║  ██║██║ ╚████║    ██████╔╝███████╗██║        ██║   ██║  ██║███████║\n");
-    printf("   ╚═════╝  ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝╚═╝        ╚═╝   ╚═╝  ╚═╝╚══════╝\n");
+    printf("  ███████╗ ██████╗ ███████╗ █████╗ ███╗   ██╗    ██████╗ ███████╗██████╗ ████████╗██╗  ██╗\n");
+    printf("  ██╔═══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║    ██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██║  ██║\n");
+    printf("  ██║   ██║██║     █████╗  ███████║██╔██╗ ██║    ██║  ██║█████╗  ██████╔╝   ██║   ███████║\n");
+    printf("  ██║   ██║██║     ██╔══╝  ██╔══██║██║╚██╗██║    ██║  ██║██╔══╝  ██╔═══╝    ██║   ██╔══██║\n");
+    printf("  ╚██████╔╝╚██████╗███████╗██║  ██║██║ ╚████║    ██████╔╝███████╗██║        ██║   ██║  ██║\n");
+    printf("   ╚═════╝  ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝    ╚═════╝ ╚══════╝╚═╝        ╚═╝   ╚═╝  ╚═╝\n");
     printf(COLOR_RESET "\n");
     print_separator('=', 100);
     printf(COLOR_YELLOW "                           Explorez les profondeurs mystérieuses de l'océan\n" COLOR_RESET);
@@ -609,20 +514,9 @@ void create_creatures_for_zone(Creature creatures[], int creature_count, int zon
     if (creature_count <= 0 || creature_count > MAX_CREATURES_PER_ZONE)
         return;
 
-    CreatureType possible_types[CREATURE_COUNT];
-    int num_possible_types = get_possible_creature_types(zone, possible_types);
-    if (num_possible_types == 0)
-        return;
-
-    for (int i = 0; i < creature_count; i++)
-    {
-        CreatureType type = possible_types[random_range(0, num_possible_types - 1)];
-        creatures[i].id = i;
-        creatures[i].is_alive = 1;
-        creatures[i].is_active = 1;
-        creatures[i].type = type;
-        set_creature_base_stats(&creatures[i], zone);
-    }
+    int zone_depth = zone * 50;  // Convertir le numéro de zone en profondeur
+    size_t generated_count;
+    generate_creatures(zone_depth, creatures, (size_t)creature_count, &generated_count);
 }
 
 int fight_all_monsters(Player *player, int zone, int monsters_count)
