@@ -20,8 +20,25 @@ static void display_map_header(void)
 
 static void display_map_row(Player *player, Map *map, int zone, const char *destinations[4][4])
 {
-    const char *zone_names[] = {"SURFACE", "ZONE 1", "ZONE 2", "ZONE 3"};
-    const char *zone_depths[] = {"0m", "-50m", "-150m", "-300m"};
+    char zone_name[20];
+    char zone_depth[20];
+    
+    // Noms dynamiques pour les zones
+    if (zone == 0)
+    {
+        strcpy(zone_name, "SURFACE");
+        strcpy(zone_depth, "0m");
+    }
+    else if (zone <= 3)
+    {
+        snprintf(zone_name, sizeof(zone_name), "ZONE %d", zone);
+        snprintf(zone_depth, sizeof(zone_depth), "-%dm", zone * 50);
+    }
+    else
+    {
+        snprintf(zone_name, sizeof(zone_name), "ABYSSE %d", zone - 3);
+        snprintf(zone_depth, sizeof(zone_depth), "-%dm", zone * 50);
+    }
 
     printf("┌─────────┬─────────┬─────────┬─────────┐ ");
     if (zone == player->current_zone)
@@ -41,7 +58,7 @@ static void display_map_row(Player *player, Map *map, int zone, const char *dest
             printf(COLOR_BOLD " 🔒 Vide " COLOR_RESET);
         printf("│");
     }
-    printf(" %s | %s\n", zone_names[zone], zone_depths[zone]);
+    printf(" %s | %s\n", zone_name, zone_depth);
     printf("└─────────┴─────────┴─────────┴─────────┘\n");
 }
 
@@ -65,7 +82,9 @@ static void handle_cleared_destination(Player *player)
 
 static void handle_hostile_destination(Player *player, Map *map, int zone, int destination, int monsters_count)
 {
-    printf("⚠️  Vous détectez %d créature(s) hostile(s) dans cette zone !\n", monsters_count);
+    // Ne pas afficher le nombre car il peut être incorrect
+    // On laisse fight_all_monsters afficher le bon nombre
+    printf("⚠️  Vous détectez des créatures hostiles dans cette zone !\n");
     printf("Préparez-vous au combat...\n\n");
     pause_screen();
 
@@ -227,25 +246,17 @@ void explore_map(Player *player, Map *map)
         }
         break;
     case '2': // Zone inférieure
-        if (player->current_zone < 3)
+        // Plus de limite maximale ! Exploration infinie
+        if (is_zone_unlocked(player, player->current_zone + 1))
         {
-            if (is_zone_unlocked(player, player->current_zone + 1))
-            {
-                player->current_zone++;
-                printf(COLOR_BLUE "Vous descendez vers la zone %d...\n" COLOR_RESET, player->current_zone);
-                pause_screen();
-                explore_map(player, map);
-            }
-            else
-            {
-                printf(COLOR_RED "⚠️  Cette zone est verrouillée ! Terminez d'abord la zone actuelle.\n" COLOR_RESET);
-                pause_screen();
-                explore_map(player, map);
-            }
+            player->current_zone++;
+            printf(COLOR_BLUE "Vous descendez vers la zone %d...\n" COLOR_RESET, player->current_zone);
+            pause_screen();
+            explore_map(player, map);
         }
         else
         {
-            printf(COLOR_RED "Vous êtes déjà dans les profondeurs maximales !\n" COLOR_RESET);
+            printf(COLOR_RED "⚠️  Cette zone est verrouillée ! Terminez d'abord la zone actuelle.\n" COLOR_RESET);
             pause_screen();
             explore_map(player, map);
         }
@@ -266,30 +277,90 @@ void explore_map(Player *player, Map *map)
 
 void display_zone_map(Player *player, Map *map)
 {
-    // Destinations par zone (4 destinations par zone)
-    const char *destinations[4][4] = {
-        {"🚤 Base", "🌊 Océan", "🌊 Océan", "🚤 Bateau"},        // Surface
-        {"🪸 Récif", "💰 Épave", "🌿 Algues", "🕳️ Grotte"},      // Zone 1
-        {"🦈 Requin", "❌ Vide", "🦑 Kraken", "❌ Vide"},        // Zone 2
-        {"❓ Inconnu", "❓ Inconnu", "❓ Inconnu", "❓ Inconnu"} // Zone 3
+    // Destinations par zone - maintenant dynamique pour toutes les zones
+    const char *base_destinations[4][4] = {
+        {"🚤 Base", "🌊 Océan", "🌊 Océan", "🚤 Bateau"},
+        {"🪸 Récif", "💰 Épave", "🌿 Algues", "🕳️ Grotte"},
+        {"🦈 Requin", "❌ Vide", "🦑 Kraken", "❌ Vide"},
+        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}
     };
+    
+    // Destinations pour les zones 4+
+    const char *abyss_destinations[4] = {"💀 Danger", "💀 Danger", "💀 Danger", "💀 Danger"};
 
     display_map_header();
-    for (int zone = 0; zone < 4; zone++)
+    
+    // Afficher toutes les zones jusqu'à la zone actuelle + 1 (pour voir la prochaine verrouillée)
+    int zones_to_display = (player->current_zone + 2 > map->zone_count) ? map->zone_count : player->current_zone + 2;
+    if (zones_to_display > map->zone_count) zones_to_display = map->zone_count;
+    
+    for (int zone = 0; zone < zones_to_display; zone++)
     {
+        const char *destinations[4][4];
+        
+        if (zone < 4)
+        {
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    destinations[i][j] = base_destinations[i][j];
+        }
+        else
+        {
+            // Pour les zones 4+, toutes les destinations sont des abysses dangereuses
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    destinations[i][j] = abyss_destinations[j];
+        }
+        
         display_map_row(player, map, zone, destinations);
     }
+    
     display_map_legend();
+    
+    if (player->current_zone >= 4)
+    {
+        printf("\n" COLOR_RED "⚠️  VOUS ÊTES DANS LES ABYSSES PROFONDS - ZONE %d\n" COLOR_RESET, player->current_zone);
+        printf(COLOR_YELLOW "Les créatures sont %d%% plus puissantes qu'en surface !\n" COLOR_RESET, 
+               (player->current_zone - 3) * 10);
+    }
 }
 
 void select_destination(Player *player, Map *map)
 {
     clear_screen();
-    const char *destinations[4][4] = {
-        {"🚤 Base [SAUF]", "🌊 Océan", "🌊 Océan", "🚤 Bateau [SHOP]"},
-        {"🪸 Récif [3 ENM]", "💰 Épave [TRÉSOR]", "🌿 Algues [5 ENM]", "🕳️ Grotte [SAUF]"},
-        {"🦈 Requin [BOSS]", "❌ Vide", "🦑 Kraken [8 ENM]", "❌ Vide"},
-        {"❓ Inconnu", "❓ Inconnu", "❓ Inconnu", "❓ Inconnu"}};
+    
+    // Destinations dynamiques
+    const char *destinations[4];
+    
+    if (player->current_zone == 0)
+    {
+        destinations[0] = "🚤 Base";
+        destinations[1] = "🌊 Océan";
+        destinations[2] = "🌊 Océan";
+        destinations[3] = "🚤 Bateau";
+    }
+    else if (player->current_zone == 1)
+    {
+        destinations[0] = "🪸 Récif";
+        destinations[1] = "💰 Épave";
+        destinations[2] = "🌿 Algues";
+        destinations[3] = "🕳️ Grotte";
+    }
+    else if (player->current_zone == 2)
+    {
+        destinations[0] = "??";
+        destinations[1] = "🌿 Algues";
+        destinations[2] = "??";
+        destinations[3] = "🪸 Récif";
+    }
+    else
+    {
+        // Zones 3+ : toutes des destinations dangereuses
+        destinations[0] = "💀 Abysses Profonds";
+        destinations[1] = "💀 Abysses Profonds";
+        destinations[2] = "💀 Abysses Profonds";
+        destinations[3] = "💀 Abysses Profonds";
+    }
 
     printf(COLOR_CYAN COLOR_BOLD "🎯 SÉLECTION DE DESTINATION - ZONE %d\n" COLOR_RESET, player->current_zone);
     print_separator('=', 60);
@@ -301,9 +372,9 @@ void select_destination(Player *player, Map *map)
         {
             if (is_destination_cleared(map, player->current_zone, i))
                 printf(COLOR_GREEN "%d." COLOR_RESET " %s " COLOR_GREEN "[TERMINÉ]" COLOR_RESET "\n",
-                       i + 1, destinations[player->current_zone][i]);
+                       i + 1, destinations[i]);
             else
-                printf(COLOR_GREEN "%d." COLOR_RESET " %s\n", i + 1, destinations[player->current_zone][i]);
+                printf(COLOR_GREEN "%d." COLOR_RESET " %s\n", i + 1, destinations[i]);
         }
         else
         {
@@ -432,17 +503,26 @@ int is_zone_completely_cleared(const Player *player, Map *map, int zone)
 
 void unlock_next_zone(Player *player, Map *map, int current_zone)
 {
-    (void)map;
-    if (player == NULL || current_zone < 0 || current_zone >= MAX_ZONES - 1)
+    if (player == NULL || map == NULL || current_zone < 0)
         return;
 
     int next_zone = current_zone + 1;
-    if (next_zone < player->zones_unlocked || next_zone >= MAX_ZONES)
-        return;
-
+    
+    if (next_zone >= map->zone_count)
+    {
+        generate_new_zone(map, next_zone);
+        map->zone_count = next_zone + 1;
+        printf(COLOR_YELLOW "\n🌊 LES ABYSSES S'APPROFONDISSENT !\n" COLOR_RESET);
+        printf("Une nouvelle zone insondable se révèle devant vous...\n");
+        printf(COLOR_RED "Les créatures y sont plus puissantes que jamais !\n" COLOR_RESET);
+    }
+    else
+    {
+        printf(COLOR_YELLOW "\n🔓 NOUVELLE ZONE DÉBLOQUÉE !\n" COLOR_RESET);
+        printf("Vous pouvez maintenant accéder à la zone %d !\n", next_zone);
+    }
+    
     player->zones_unlocked = next_zone + 1;
-    printf(COLOR_YELLOW "\n🔓 NOUVELLE ZONE DÉBLOQUÉE !\n" COLOR_RESET);
-    printf("Vous pouvez maintenant accéder à la zone %d !\n", next_zone);
     pause_screen();
 }
 
@@ -505,9 +585,12 @@ void create_creatures_for_zone(Creature creatures[], int creature_count, int zon
     if (creature_count <= 0 || creature_count > MAX_CREATURES_PER_ZONE)
         return;
 
-    int zone_depth = zone * 50;  // Convertir le numéro de zone en profondeur
+    int zone_depth = zone * 50;
     size_t generated_count;
     generate_creatures(zone_depth, creatures, (size_t)creature_count, &generated_count);
+    
+    // Afficher le nombre réel de créatures générées
+    printf(COLOR_RED "⚔️  %zu créature(s) hostile(s) apparaissent !\n" COLOR_RESET, generated_count);
 }
 
 int fight_all_monsters(Player *player, int zone, int monsters_count)

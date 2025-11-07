@@ -12,70 +12,64 @@ static void initialize_creature_stats(Creature *creature, int zone_level)
     assert(creature != NULL);
     assert(creature->type >= CREATURE_KRAKEN && creature->type < CREATURE_COUNT);
 
-    // Le bonus ne s'applique qu'à partir du niveau 4
-    int level_bonus_hp = 0;
-    int level_bonus_atk = 0;
-    int level_bonus_def = 0;
+    int base_hp_min, base_hp_max, base_atk_min, base_atk_max, base_def;
     
-    if (zone_level >= 4)
-    {
-        level_bonus_hp = (zone_level - 3) * 8;
-        level_bonus_atk = (zone_level - 3) * 1;
-        level_bonus_def = (zone_level - 3) * 1;
-    }
-
     switch (creature->type)
     {
     case CREATURE_KRAKEN:
-        creature->hp_max = random_range(100, 150) + level_bonus_hp;
-        creature->attack_min = 18 + level_bonus_atk;
-        creature->attack_max = 28 + level_bonus_atk;
-        creature->defense = 12 + level_bonus_def;
+        base_hp_min = 100; base_hp_max = 150;
+        base_atk_min = 18; base_atk_max = 28;
+        base_def = 12;
         creature->speed = 5;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_SHARK:
-        creature->hp_max = random_range(40, 70) + level_bonus_hp;
-        creature->attack_min = 10 + level_bonus_atk;
-        creature->attack_max = 16 + level_bonus_atk;
-        creature->defense = 3 + level_bonus_def;
+        base_hp_min = 40; base_hp_max = 70;
+        base_atk_min = 10; base_atk_max = 16;
+        base_def = 3;
         creature->speed = 15;
         creature->special_effect = EFFECT_BLEED;
         break;
     case CREATURE_JELLYFISH:
-        creature->hp_max = random_range(15, 30) + level_bonus_hp;
-        creature->attack_min = 5 + level_bonus_atk;
-        creature->attack_max = 10 + level_bonus_atk;
-        creature->defense = 0 + level_bonus_def;
+        base_hp_min = 15; base_hp_max = 30;
+        base_atk_min = 5; base_atk_max = 10;
+        base_def = 0;
         creature->speed = 8;
         creature->special_effect = EFFECT_PARALYSIS;
         break;
     case CREATURE_SWORDFISH:
-        creature->hp_max = random_range(50, 70) + level_bonus_hp;
-        creature->attack_min = 12 + level_bonus_atk;
-        creature->attack_max = 20 + level_bonus_atk;
-        creature->defense = 5 + level_bonus_def;
+        base_hp_min = 50; base_hp_max = 70;
+        base_atk_min = 12; base_atk_max = 20;
+        base_def = 5;
         creature->speed = 12;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_GIANT_CRAB:
-        creature->hp_max = random_range(60, 90) + level_bonus_hp;
-        creature->attack_min = 8 + level_bonus_atk;
-        creature->attack_max = 14 + level_bonus_atk;
-        creature->defense = 15 + level_bonus_def;
+        base_hp_min = 60; base_hp_max = 90;
+        base_atk_min = 8; base_atk_max = 14;
+        base_def = 15;
         creature->speed = 3;
         creature->special_effect = EFFECT_NONE;
         break;
-    case CREATURE_COUNT:
     default:
-        creature->hp_max = 0;
-        creature->attack_min = 0;
-        creature->attack_max = 0;
-        creature->defense = 0;
+        base_hp_min = 0; base_hp_max = 0;
+        base_atk_min = 0; base_atk_max = 0;
+        base_def = 0;
         creature->speed = 0;
         creature->special_effect = EFFECT_NONE;
         break;
     }
+    
+    float multiplier = 1.0f;
+    if (zone_level > 3)
+    {
+        multiplier = 1.0f + ((zone_level - 3) * 0.10f);
+    }
+    
+    creature->hp_max = (int)(random_range(base_hp_min, base_hp_max) * multiplier);
+    creature->attack_min = (int)(base_atk_min * multiplier);
+    creature->attack_max = (int)(base_atk_max * multiplier);
+    creature->defense = (int)(base_def * multiplier);
 
     strncpy(creature->name, get_creature_name(creature->type), sizeof(creature->name) - 1);
     creature->name[sizeof(creature->name) - 1] = '\0';
