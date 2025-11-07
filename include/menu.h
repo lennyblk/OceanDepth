@@ -9,7 +9,6 @@ int display_main_menu(Player *player);
 int handle_menu_choice(int choice, Player *player, Map *map, int *game_time);
 
 void explore_map(Player *player, Map *map);
-void search_creatures(Player *player, Map *map);
 void visit_shop(Player *player);
 void rest_at_surface(Player *player);
 void manage_inventory(Player *player);

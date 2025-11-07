@@ -150,10 +150,10 @@ int display_main_menu(Player *player)
     printf(COLOR_BOLD "╔══════════════════════════════════════ MENU PRINCIPAL ══════════════════════════════════════╗\n" COLOR_RESET);
     printf("║                                                                                             ║\n");
     printf("║  " COLOR_GREEN "1." COLOR_RESET " 🗺️  Explorer la carte                    " COLOR_GREEN "6." COLOR_RESET " 🎒 Gérer l'inventaire                         ║\n");
-    printf("║  " COLOR_GREEN "2." COLOR_RESET " ⚔️  Chercher des créatures               " COLOR_GREEN "7." COLOR_RESET " 🛡️  Équipement et armes                       ║\n");
-    printf("║  " COLOR_GREEN "3." COLOR_RESET " 📊 Voir les statistiques                 " COLOR_GREEN "8." COLOR_RESET " 💾 Sauvegarder la partie                      ║\n");
-    printf("║  " COLOR_GREEN "4." COLOR_RESET " 🏪 Visiter le marché                     " COLOR_GREEN "9." COLOR_RESET " 📖 Consulter le journal                       ║\n");
-    printf("║  " COLOR_GREEN "5." COLOR_RESET " 🌊 Se reposer en surface                 " COLOR_GREEN "0." COLOR_RESET " ❌ Quitter le jeu                             ║\n");
+    printf("║  " COLOR_GREEN "2." COLOR_RESET " 📊 Voir les statistiques                 " COLOR_GREEN "7." COLOR_RESET " 🛡️  Équipement et armes                       ║\n");
+    printf("║  " COLOR_GREEN "3." COLOR_RESET " 🏪 Visiter le marché                     " COLOR_GREEN "8." COLOR_RESET " 💾 Sauvegarder la partie                      ║\n");
+    printf("║  " COLOR_GREEN "4." COLOR_RESET " 🌊 Se reposer en surface                 " COLOR_GREEN "9." COLOR_RESET " 📖 Consulter le journal                       ║\n");
+    printf("║  " COLOR_GREEN "5." COLOR_RESET " ???                                      " COLOR_GREEN "0." COLOR_RESET " ❌ Quitter le jeu                             ║\n");
     printf("║                                                                                             ║\n");
     printf("╚═════════════════════════════════════════════════════════════════════════════════════════════╝\n");
     printf("\n" COLOR_BOLD "Choisissez votre action: " COLOR_RESET);
@@ -170,17 +170,17 @@ int handle_menu_choice(int choice, Player *player, Map *map, int *game_time)
         explore_map(player, map);
         break;
     case 2:
-        search_creatures(player, map);
-        break;
-    case 3:
         player_display_stats(player);
         pause_screen();
         break;
-    case 4:
+    case 3:
         visit_shop(player);
         break;
-    case 5:
+    case 4:
         rest_at_surface(player);
+        break;
+    case 5:
+        sananes();
         break;
     case 6:
         manage_inventory(player);
@@ -526,14 +526,6 @@ void unlock_next_zone(Player *player, Map *map, int current_zone)
     pause_screen();
 }
 
-void search_creatures(Player *player, Map *map)
-{
-    (void)player;
-    (void)map;
-    printf("Fonction search_creatures pas encore implémentée.\n");
-    pause_screen();
-}
-
 void visit_shop(Player *player)
 {
     (void)player;
@@ -575,8 +567,81 @@ void manage_equipment(Player *player)
 
 void display_journal(Player *player)
 {
-    (void)player;
-    printf("Fonction display_journal pas encore implémentée.\n");
+    if (player == NULL)
+        return;
+    
+    clear_screen();
+    
+    printf(COLOR_CYAN COLOR_BOLD);
+    printf("╔═══════════════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║                            📖 JOURNAL DE BORD - OCEAN DEPTHS                          ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════════════╝\n");
+    printf(COLOR_RESET);
+    
+    printf("\n" COLOR_YELLOW "═══ VOTRE HISTOIRE ═══" COLOR_RESET "\n\n");
+    
+    printf("Vous êtes %s, un plongeur des profondeurs devenu chasseur de monstres marins.\n", player->name);
+    printf("Après la disparition mystérieuse de votre équipage lors d'une expédition,\n");
+    printf("vous avez juré de découvrir les secrets cachés dans les abysses.\n\n");
+    
+    printf("Les légendes parlent d'un " COLOR_RED "Kraken ancestral" COLOR_RESET " tapi dans les profondeurs,\n");
+    printf("gardien d'un trésor inestimable et responsable de nombreux naufrages.\n\n");
+    
+    printf(COLOR_BOLD "Votre mission : " COLOR_RESET "Descendre toujours plus profond, affronter les créatures\n");
+    printf("des abysses, et prouver que vous êtes le plus grand chasseur sous-marin !\n\n");
+    
+    print_separator('=', 87);
+    printf("\n" COLOR_YELLOW "═══ COMMENT JOUER ═══" COLOR_RESET "\n\n");
+    
+    printf(COLOR_CYAN "🗺️  EXPLORATION" COLOR_RESET "\n");
+    printf("   • Naviguez entre 4 zones de profondeur croissante (Surface → Abysses)\n");
+    printf("   • Chaque zone contient 4 destinations à explorer\n");
+    printf("   • Terminez toutes les destinations pour débloquer la zone suivante\n");
+    printf("   • " COLOR_RED "ATTENTION :" COLOR_RESET " Plus vous descendez, plus les créatures sont dangereuses !\n\n");
+    
+    printf(COLOR_RED "⚔️  COMBAT" COLOR_RESET "\n");
+    printf("   • Vous avez AUTANT d'actions que d'ennemis vivants par tour\n");
+    printf("   • Attaquez avec votre harpon ou utilisez des compétences marines\n");
+    printf("   • Gérez votre " COLOR_CYAN "oxygène" COLOR_RESET " : chaque action en consomme !\n");
+    printf("   • Si votre oxygène atteint 0, vous perdez des PV chaque tour\n\n");
+    
+    printf(COLOR_YELLOW "💡 PROGRESSION" COLOR_RESET "\n");
+    printf("   • Gagnez de l'XP en vainquant des créatures\n");
+    printf("   • Montez de niveau pour augmenter vos PV et votre oxygène max\n");
+    printf("   • Collectez des " COLOR_YELLOW "perles" COLOR_RESET " pour acheter équipement et améliorations\n\n");
+    
+    printf(COLOR_GREEN "🌊 REPOS & RESSOURCES" COLOR_RESET "\n");
+    printf("   • Retournez à la surface (Zone 0) pour restaurer PV et oxygène\n");
+    printf("   • Certaines destinations sont des zones sûres sans combat\n");
+    printf("   • Explorez les épaves pour trouver des trésors cachés\n\n");
+    
+    print_separator('=', 87);
+    printf("\n" COLOR_YELLOW "═══ TYPES DE CRÉATURES ═══" COLOR_RESET "\n\n");
+    
+    printf("💧 " COLOR_CYAN "Méduse Bleue" COLOR_RESET " (Zones 0-1)\n");
+    printf("   Attaque paralysante - Vous paralyse pour 1 tour\n\n");
+    
+    printf("🗡️  " COLOR_BLUE "Espadon" COLOR_RESET " (Zones 0-1)\n");
+    printf("   Charge perforante - Ignore une partie de votre défense\n\n");
+    
+    printf("🦈 " COLOR_RED "Requin-Tigre" COLOR_RESET " (Zones 2+)\n");
+    printf("   Frénésie sanguinaire - Plus dangereux quand blessé\n\n");
+    
+    printf("🦀 " COLOR_YELLOW "Crabe Géant" COLOR_RESET " (Zones 2+)\n");
+    printf("   Carapace durcie - Très résistant aux dégâts\n\n");
+    
+    printf("🦑 " COLOR_MAGENTA "KRAKEN" COLOR_RESET " (Zones 3+)\n");
+    printf("   " COLOR_RED "BOSS LÉGENDAIRE" COLOR_RESET " - Attaque DEUX fois par tour !\n\n");
+    
+    print_separator('=', 87);
+    printf("\n" COLOR_YELLOW "═══ OBJECTIF FINAL ═══" COLOR_RESET "\n\n");
+    
+    printf(COLOR_BOLD "Survivez le plus longtemps possible dans les abysses infinis !\n" COLOR_RESET);
+    printf("Chaque zone au-delà de la 3 augmente la puissance des créatures de +10%%.\n");
+    printf("Jusqu'où oserez-vous descendre, %s ?\n\n", player->name);
+    
+    printf(COLOR_GREEN "Bonne chance, chasseur des profondeurs ! 🌊\n\n" COLOR_RESET);
+    
     pause_screen();
 }
 
