@@ -350,7 +350,17 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
     }
     else
     {
-        int monsters_count = get_monsters_in_destination(zone, destination);
+        int monsters_count = random_range(1, 4);
+        
+        if (zone == 0 && (destination == 0 || destination == 3))
+        {
+            monsters_count = 0; // pas de monstres dans la première zones
+        }
+        else if (zone == 2 && (destination == 0 || destination == 2))
+        {
+            monsters_count = 1;
+        }
+        
         if (monsters_count > 0)
             handle_hostile_destination(player, map, zone, destination, monsters_count);
         else
@@ -406,25 +416,6 @@ void mark_destination_cleared(Map *map, int zone, int destination)
     {
         map->zones[zone].destinations[destination].cleared = 1;
     }
-}
-
-int get_monsters_in_destination(int zone, int destination)
-{
-    if (zone < 0 || zone >= 4 || destination < 0 || destination >= 4)
-        return 0;
-
-    int monsters[4][4] = {
-        {0, 2, 1, 0},  // Surface: Base=0, Océan=2, Océan=1, Bateau=0
-        {3, 1, 5, 0},  // Zone 1: Récif=3, Épave=1, Algues=5, Grotte=0 (sûre)
-        {1, 0, 8, 0},  // Zone 2: Requin=1 (boss), Vide=0, Kraken=8, Vide=0
-        {5, 7, 10, 12} // Zone 3: Tous dangereux
-    };
-
-    if (zone == 2 && destination == 0)
-        return 1;
-    if (zone == 2 && destination == 2)
-        return 1;
-    return monsters[zone][destination];
 }
 
 int is_zone_completely_cleared(const Player *player, Map *map, int zone)
