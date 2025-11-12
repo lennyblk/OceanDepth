@@ -213,7 +213,7 @@ typedef struct
 // STRUCTURE MAP =======================================================================================================
 typedef struct
 {
-    Zone zones[10];
+    Zone zones[100];
     int zone_count;
     int current_zone_index;
 } Map;
