@@ -214,8 +214,8 @@ void player_move(Player *player, int delta_x, int delta_y) {
         player->current_zone = 0;
     }
 
-    // Consommation d'oxygène selon la zone
-    int oxygen_cost = 1 + (player->current_zone * 10 / 100);
+    // Consommation d'oxygène réduite
+    int oxygen_cost = 1 + (player->current_zone * 5 / 100);  // Réduit de 10 à 5
     player_use_oxygen(player, oxygen_cost);
 
     printf(COLOR_BLUE "%s se déplace à la position (%d, %d) - Zone: %d" COLOR_RESET "\n",

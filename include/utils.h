@@ -23,4 +23,7 @@ int confirm_action(const char *message);
 void to_lowercase(char *str);
 void trim_string(char *str);
 
+void display_health_bar(int current, int max, int bar_length);
+void display_oxygen_bar(int current, int max, int bar_length);
+
 #endif

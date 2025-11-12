@@ -12,5 +12,6 @@ void display_marchand_ascii(void);
 void display_creature_ascii(int creature_type);
 void display_combat_scene(void);
 void display_title_screen(void);
+void sananes(void);
 
 #endif

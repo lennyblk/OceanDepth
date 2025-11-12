@@ -10,7 +10,6 @@ void handle_menu_choice(int choice, Player *player, Map *map);
 
 // Fonctions des options du menu principal
 void explore_map(Player *player, Map *map);
-void search_creatures(Player *player, Map *map);
 void visit_shop(Player *player);
 void rest_at_surface(Player *player);
 void save_game(Player *player, Map *map);
