@@ -1,18 +1,119 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 #include "../include/menu.h"
 #include "../include/player.h"
 #include "../include/utils.h"
 #include "../include/constants.h"
 #include "../include/ascii_art.h"
 #include "../include/map.h"
+#include "../include/combat.h"
+#include "../include/save.h"
+#include "../include/creature.h"
 #include "../include/shop.h"
 #include "../include/inventory.h"
 #include "../include/gear.h"
-#include "../include/save.h"
-#include "../include/combat.h"
-#include <string.h>
-#include "../include/creature.h"
+
+static void display_map_header(void)
+{
+    printf(COLOR_BOLD "                    CARTOGRAPHIE OCÉANIQUE - SECTEUR PACIFIQUE\n" COLOR_RESET);
+    print_separator('-', 80);
+}
+
+static void display_map_row(Player *player, Map *map, int zone, const char *destinations[4][4])
+{
+    char zone_name[20];
+    char zone_depth[20];
+    
+    if (zone == 0)
+    {
+        strcpy(zone_name, "SURFACE");
+        strcpy(zone_depth, "0m");
+    }
+    else if (zone <= 3)
+    {
+        snprintf(zone_name, sizeof(zone_name), "ZONE %d", zone);
+        snprintf(zone_depth, sizeof(zone_depth), "-%dm", zone * 50);
+    }
+    else
+    {
+        snprintf(zone_name, sizeof(zone_name), "ABYSSE %d", zone - 3);
+        snprintf(zone_depth, sizeof(zone_depth), "-%dm", zone * 50);
+    }
+
+    printf("┌─────────┬─────────┬─────────┬─────────┐ ");
+    if (zone == player->current_zone)
+        printf(COLOR_YELLOW "← VOUS ÊTES ICI" COLOR_RESET);
+    else if (!is_zone_unlocked(player, zone))
+        printf(COLOR_RED "🔒 VERROUILLÉ" COLOR_RESET);
+    printf("\n");
+
+    printf("│");
+    for (int col = 0; col < 4; col++)
+    {
+        if (is_destination_cleared(map, zone, col))
+            printf(COLOR_GREEN " ✓ %s " COLOR_RESET, destinations[zone][col]);
+        else if (is_zone_unlocked(player, zone))
+            printf(" %s ", destinations[zone][col]);
+        else
+            printf(COLOR_BOLD " 🔒 Vide " COLOR_RESET);
+        printf("│");
+    }
+    printf(" %s | %s\n", zone_name, zone_depth);
+    printf("└─────────┴─────────┴─────────┴─────────┘\n");
+}
+
+static void display_map_legend(void)
+{
+    printf("\n" COLOR_YELLOW "Légende: " COLOR_RESET);
+    printf(COLOR_GREEN "✓ = Terminé" COLOR_RESET " | ");
+    printf(COLOR_BOLD "🔒 = Verrouillé" COLOR_RESET " | ");
+    printf(COLOR_YELLOW "Zone actuelle surlignée" COLOR_RESET "\n");
+}
+
+static void handle_cleared_destination(Player *player)
+{
+    printf(COLOR_GREEN "Cette zone a déjà été nettoyée de ses créatures.\n" COLOR_RESET);
+    printf("Vous pouvez chercher des ressources supplémentaires.\n\n");
+
+    int bonus_pearls = 1 + random_range(1, 2);
+    player->pearls += bonus_pearls;
+    printf(COLOR_YELLOW "✨ Vous trouvez %d perle(s) supplémentaire(s) !\n" COLOR_RESET, bonus_pearls);
+}
+
+static void handle_hostile_destination(Player *player, Map *map, int zone, int destination, int monsters_count)
+{
+    printf("⚠️  Vous détectez des créatures hostiles dans cette zone !\n");
+    printf("Préparez-vous au combat...\n\n");
+    pause_screen();
+
+    int combat_result = fight_all_monsters(player, zone, monsters_count);
+
+    if (combat_result == 1)
+    {
+        mark_destination_cleared(map, zone, destination);
+        give_zone_rewards(player, zone, destination);
+        if (is_zone_completely_cleared(player, map, zone))
+            unlock_next_zone(player, map, zone);
+    }
+}
+
+static void handle_safe_destination(Player *player, Map *map, int zone, int destination)
+{
+    printf(COLOR_GREEN "Cette zone est paisible, aucune créature hostile détectée.\n" COLOR_RESET);
+    if (zone == 0 && (destination == 0 || destination == 3))
+    {
+        printf("Vous pouvez vous reposer ici et récupérer votre oxygène.\n");
+        player->oxygen = player->max_oxygen;
+        printf(COLOR_CYAN "💨 Oxygène restauré à %d/%d\n" COLOR_RESET, player->oxygen, player->max_oxygen);
+    }
+    mark_destination_cleared(map, zone, destination);
+    give_zone_rewards(player, zone, destination);
+
+    if (is_zone_completely_cleared(player, map, zone))
+        unlock_next_zone(player, map, zone);
+}
 
 void display_title_screen()
 {
@@ -149,7 +250,6 @@ void explore_map(Player *player, Map *map)
         }
         break;
     case '2': // Zone inférieure
-        // Plus de limite maximale ! Exploration infinie
         if (is_zone_unlocked(player, player->current_zone + 1))
         {
             player->current_zone++;
@@ -162,33 +262,41 @@ void explore_map(Player *player, Map *map)
             printf(COLOR_RED "⚠️  Cette zone est verrouillée ! Terminez d'abord la zone actuelle.\n" COLOR_RESET);
             pause_screen();
             explore_map(player, map);
-            break;
         }
+        break;
+    case '3': // Choisir une destination
+        select_destination(player, map);
+        explore_map(player, map);
+        break;
+    case '0': // Retour au menu
+        return;
+    default:
+        print_error("Choix invalide !");
+        pause_screen();
+        explore_map(player, map);
+        break;
     }
 }
 void display_zone_map(Player *player, Map *map)
 {
-    // Destinations par zone - maintenant dynamique pour toutes les zones
     const char *base_destinations[4][4] = {
         {"🚤 Base", "🌊 Océan", "🌊 Océan", "🚤 Bateau"},
         {"🪸 Récif", "💰 Épave", "🌿 Algues", "🕳️ Grotte"},
         {"🦈 Requin", "❌ Vide", "🦑 Kraken", "❌ Vide"},
-        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}};
-
-    // Destinations pour les zones 4+
+        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}
+    };
+    
     const char *abyss_destinations[4] = {"💀 Danger", "💀 Danger", "💀 Danger", "💀 Danger"};
 
-    // display_map_header();
-
-    // Afficher toutes les zones jusqu'à la zone actuelle + 1 (pour voir la prochaine verrouillée)
+    display_map_header();
+    
     int zones_to_display = (player->current_zone + 2 > map->zone_count) ? map->zone_count : player->current_zone + 2;
-    if (zones_to_display > map->zone_count)
-        zones_to_display = map->zone_count;
-
+    if (zones_to_display > map->zone_count) zones_to_display = map->zone_count;
+    
     for (int zone = 0; zone < zones_to_display; zone++)
     {
         const char *destinations[4][4];
-
+        
         if (zone < 4)
         {
             for (int i = 0; i < 4; i++)
@@ -197,21 +305,20 @@ void display_zone_map(Player *player, Map *map)
         }
         else
         {
-            // Pour les zones 4+, toutes les destinations sont des abysses dangereuses
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
                     destinations[i][j] = abyss_destinations[j];
         }
-
-        // display_map_row(player, map, zone, destinations);
+        
+        display_map_row(player, map, zone, destinations);
     }
-
-    // display_map_legend();
-
+    
+    display_map_legend();
+    
     if (player->current_zone >= 4)
     {
         printf("\n" COLOR_RED "⚠️  VOUS ÊTES DANS LES ABYSSES PROFONDS - ZONE %d\n" COLOR_RESET, player->current_zone);
-        printf(COLOR_YELLOW "Les créatures sont %d%% plus puissantes qu'en surface !\n" COLOR_RESET,
+        printf(COLOR_YELLOW "Les créatures sont %d%% plus puissantes qu'en surface !\n" COLOR_RESET, 
                (player->current_zone - 3) * 10);
     }
 }
@@ -303,42 +410,34 @@ void select_destination(Player *player, Map *map)
 void enter_destination(Player *player, Map *map, int zone, int destination)
 {
     clear_screen();
-
     const char *dest_names[4][4] = {
         {"Base de plongée", "Océan libre", "Océan libre", "Bateau marchand"},
         {"Récif corallien", "Épave du galion", "Forêt d'algues", "Grotte sous-marine"},
         {"Territoire du requin", "Zone vide", "Repaire du Kraken", "Zone vide"},
-        {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}};
+        {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}
+    };
 
     printf(COLOR_CYAN COLOR_BOLD "🏊 EXPLORATION: %s\n" COLOR_RESET, dest_names[zone][destination]);
     print_separator('=', 60);
 
     if (is_destination_cleared(map, zone, destination))
     {
-        printf(COLOR_GREEN "Cette zone a déjà été nettoyée de ses créatures.\n" COLOR_RESET);
-        printf("Vous pouvez chercher des ressources supplémentaires.\n\n");
-
-        // Petite récompense pour revisiter
-        int bonus_pearls = 1 + rand() % 2;
-        player->pearls += bonus_pearls;
-        printf(COLOR_YELLOW "✨ Vous trouvez %d perle(s) supplémentaire(s) !\n" COLOR_RESET, bonus_pearls);
-
-        pause_screen();
-        return;
+        handle_cleared_destination(player);
     }
     else
     {
-        int monsters_count = get_monsters_in_destination(zone, destination);
+        int monsters_count = random_range(1, 4);
+        
+        if (zone == 0 && (destination == 0 || destination == 3))
+            monsters_count = 0;
+        else if (zone == 2 && (destination == 0 || destination == 2))
+            monsters_count = 1;
+        
         if (monsters_count > 0)
-        {
-            // handle_hostile_destination(player, map, zone, destination, monsters_count);
-        }
+            handle_hostile_destination(player, map, zone, destination, monsters_count);
         else
-        {
-            // handle_safe_destination(player, map, zone, destination);
-        }
+            handle_safe_destination(player, map, zone, destination);
     }
-
     pause_screen();
 }
 
@@ -352,9 +451,11 @@ int get_zone_depth(int zone)
 
 int is_zone_unlocked(const Player *player, int zone)
 {
-    if (zone < 0 || zone >= 5)
+    if (player == NULL || zone < 0 || zone >= MAX_ZONES)
         return 0;
-    return player->zones_unlocked >= zone;
+    if (zone == 0)
+        return 1;
+    return player->zones_unlocked > zone;
 }
 
 int is_destination_available(const Player *player, Map *map, int zone, int destination)
@@ -554,5 +655,27 @@ int fight_all_monsters(Player *player, int zone, int monsters_count)
     {
         printf(COLOR_RED "\nDÉFAITE... Vous avez succombé aux profondeurs.\n" COLOR_RESET);
         return -1;
+    }
+}
+
+void give_zone_rewards(Player *player, int zone, int destination)
+{
+    if (player == NULL || zone < 0 || destination < 0)
+        return;
+
+    int base_reward = 10;
+    int zone_multiplier = zone + 1;
+    int dest_multiplier = destination + 1;
+    int random_bonus = random_range(0, 5 * zone_multiplier);
+    int pearl_reward = base_reward * zone_multiplier + dest_multiplier * 5 + random_bonus;
+
+    if (pearl_reward > 0)
+        player->pearls += pearl_reward;
+
+    if (zone == 1 && destination == 1)
+    {
+        printf(COLOR_YELLOW "✨ Vous avez trouvé un trésor dans l'épave ! ✨\n" COLOR_RESET);
+        int treasure_pearls = random_range(50, 100);
+        player->pearls += treasure_pearls;
     }
 }
