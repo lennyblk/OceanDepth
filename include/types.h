@@ -27,6 +27,8 @@ typedef enum
     ITEM_HEALTH_KIT,
     ITEM_STIMULANT,
     ITEM_ANTIDOTE,
+    ITEM_WEAPON,
+    ITEM_ARMOR,
     ITEM_COUNT
 } ItemType;
 
@@ -118,7 +120,10 @@ typedef struct
     int hp_restore;
     int oxygen_restore;
     int fatigue_reduce;
-    int removes_effect;
+    int removes_effect; 
+    Weapon weapon_data;
+    Armor armor_data;
+
 } Item;
 
 // STRUCTURE SKILL =======================================================================================================
