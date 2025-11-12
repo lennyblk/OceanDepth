@@ -12,7 +12,6 @@ void print_separator(char character, int length);
 void print_title(const char *title);
 void print_error(const char *message);
 void print_success(const char *message);
-void print_info(const char *message);
 void pause_screen();
 void print_progress_bar(int current, int max, int width);
 

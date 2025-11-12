@@ -15,11 +15,11 @@ void initialize_game(Player *player, Map *map)
     display_player_ascii();
 
     printf("Bienvenue dans les profondeurs mystérieuses de l'océan !\n");
-    printf("\n" COLOR_YELLOW "[MODE TEST] Appuyez sur 'T' pour un perso de test ultra puissant" COLOR_RESET "\n");
-    printf("Comment vous appelez-vous, notre Monster Slayer ? ");
+    printf("Comment vous appelez-vous, notre Monster Slayer ?\n");
+    printf(COLOR_YELLOW "(Maximum %d caractères): " COLOR_RESET, MAX_NAME_LENGTH - 1);
 
     char name[MAX_NAME_LENGTH];
-    get_string_input(name, sizeof(name));
+    get_string_input(name, sizeof(name)); // name est vide ici 
 
     player_init_with_name(player, name);
     map_init(map);
