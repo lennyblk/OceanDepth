@@ -43,7 +43,7 @@ void player_init_skills(Player *player)
     skill_comm->pacifies_enemy = 1;
     skill_comm->cooldown_max = 3;
     skill_comm->cooldown_current = 0;
-    skill_comm->is_unlocked = 0;
+    skill_comm->is_unlocked = 1; // MODIFIÉ (précédemment 0)
 
     Skill *skill_vortex = &player->skills[SKILL_WATER_VORTEX];
     skill_vortex->type = SKILL_WATER_VORTEX;
@@ -52,7 +52,7 @@ void player_init_skills(Player *player)
     skill_vortex->slows_enemies = 1;
     skill_vortex->cooldown_max = 6;
     skill_vortex->cooldown_current = 0;
-    skill_vortex->is_unlocked = 0;
+    skill_vortex->is_unlocked = 1; // MODIFIÉ (précédemment 0)
 }
 
 void player_init(Player *player)
@@ -96,6 +96,8 @@ void player_init(Player *player)
     player->is_poisoned = 0;
     player->paralysis_turns_left = 0;
     player->poison_turns_left = 0;
+
+    player->attacks_reduced_next_turn = 0; // AJOUTÉ
 
     player_init_skills(player);
 

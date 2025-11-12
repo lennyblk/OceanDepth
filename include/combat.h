@@ -17,7 +17,7 @@ void use_item(Player *player);
 
 // Utilitaires combat
 int calculate_damage(int attack_min, int attack_max, int defense);
-int calculate_player_damage(const Player *player, const Creature *target);
+int calculate_player_damage(const Player *player, const Creature *target, int defense_ignored);
 int calculate_creature_damage(const Creature *attacker, const Player *player);
 int check_combat_end(const Player *player, const Creature creatures[], int creature_count);
 void display_combat_menu(int attacks_left);

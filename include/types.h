@@ -87,6 +87,8 @@ typedef struct
     int effect_duration;
     int is_alive;
     int is_active;
+    int is_pacified;
+    int pacified_turns_left;
 } Creature;
 
 // Arme (harpon)
@@ -120,7 +122,7 @@ typedef struct
     int hp_restore;
     int oxygen_restore;
     int fatigue_reduce;
-    int removes_effect; 
+    int removes_effect;
     Weapon weapon_data;
     Armor armor_data;
 
@@ -178,6 +180,7 @@ typedef struct
     int is_poisoned;
     int paralysis_turns_left;
     int poison_turns_left;
+    int attacks_reduced_next_turn;
 } Player;
 
 // STRUCTURE ZONE =======================================================================================================

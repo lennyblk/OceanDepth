@@ -7,6 +7,7 @@ void display_kraken_ascii(void);
 void display_shark_ascii(void);
 void display_jellyfish_ascii(void);
 void display_swordfish_ascii(void);
+void display_giant_crab_ascii(void);
 void display_marchand_ascii(void);
 
 void display_creature_ascii(int creature_type);

@@ -13,59 +13,71 @@ static void initialize_creature_stats(Creature *creature, int zone_level)
     assert(creature->type >= CREATURE_KRAKEN && creature->type < CREATURE_COUNT);
 
     int base_hp_min, base_hp_max, base_atk_min, base_atk_max, base_def;
-    
+
     switch (creature->type)
     {
     case CREATURE_KRAKEN:
-        base_hp_min = 100; base_hp_max = 150;
-        base_atk_min = 18; base_atk_max = 28;
+        base_hp_min = 100;
+        base_hp_max = 150;
+        base_atk_min = 18;
+        base_atk_max = 28;
         base_def = 12;
         creature->speed = 5;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_SHARK:
-        base_hp_min = 40; base_hp_max = 70;
-        base_atk_min = 10; base_atk_max = 16;
+        base_hp_min = 40;
+        base_hp_max = 70;
+        base_atk_min = 10;
+        base_atk_max = 16;
         base_def = 3;
         creature->speed = 15;
         creature->special_effect = EFFECT_BLEED;
         break;
     case CREATURE_JELLYFISH:
-        base_hp_min = 15; base_hp_max = 30;
-        base_atk_min = 5; base_atk_max = 10;
+        base_hp_min = 15;
+        base_hp_max = 30;
+        base_atk_min = 5;
+        base_atk_max = 10;
         base_def = 0;
         creature->speed = 8;
         creature->special_effect = EFFECT_PARALYSIS;
         break;
     case CREATURE_SWORDFISH:
-        base_hp_min = 50; base_hp_max = 70;
-        base_atk_min = 12; base_atk_max = 20;
+        base_hp_min = 50;
+        base_hp_max = 70;
+        base_atk_min = 12;
+        base_atk_max = 20;
         base_def = 5;
         creature->speed = 12;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_GIANT_CRAB:
-        base_hp_min = 60; base_hp_max = 90;
-        base_atk_min = 8; base_atk_max = 14;
+        base_hp_min = 60;
+        base_hp_max = 90;
+        base_atk_min = 8;
+        base_atk_max = 14;
         base_def = 15;
         creature->speed = 3;
         creature->special_effect = EFFECT_NONE;
         break;
     default:
-        base_hp_min = 0; base_hp_max = 0;
-        base_atk_min = 0; base_atk_max = 0;
+        base_hp_min = 0;
+        base_hp_max = 0;
+        base_atk_min = 0;
+        base_atk_max = 0;
         base_def = 0;
         creature->speed = 0;
         creature->special_effect = EFFECT_NONE;
         break;
     }
-    
+
     float multiplier = 1.0f;
     if (zone_level > 3)
     {
         multiplier = 1.0f + ((zone_level - 3) * 0.10f);
     }
-    
+
     creature->hp_max = (int)(random_range(base_hp_min, base_hp_max) * multiplier);
     creature->attack_min = (int)(base_atk_min * multiplier);
     creature->attack_max = (int)(base_atk_max * multiplier);
@@ -77,6 +89,10 @@ static void initialize_creature_stats(Creature *creature, int zone_level)
     creature->effect_duration = 0;
     creature->is_alive = 1;
     creature->is_active = 1;
+
+    // AJOUTÉ
+    creature->is_pacified = 0;
+    creature->pacified_turns_left = 0;
 }
 
 Creature create_creature(CreatureType type, int zone_level)
@@ -102,23 +118,22 @@ void generate_creatures(int zone_depth, Creature creature_array[], size_t array_
 
     *generated_count = 0;
     int zone_level = 1 + (zone_depth / 50);
-    
+
     // Convertir la profondeur en numéro de zone (je sais pas pourquoi on avait deux échelles différentes donc j'ai changé)
     int zone_number;
     if (zone_depth <= 0)
-        zone_number = 0;  // Surface
+        zone_number = 0; // Surface
     else if (zone_depth <= 50)
-        zone_number = 1;  // Zone 1
+        zone_number = 1; // Zone 1
     else if (zone_depth <= 150)
-        zone_number = 2;  // Zone 2
+        zone_number = 2; // Zone 2
     else
-        zone_number = 3;  // Zone 3 (Abysse)
-
+        zone_number = 3; // Zone 3 (Abysse)
 
     for (size_t i = 0; i < creatures_to_generate; ++i)
     {
         CreatureType random_type;
-        
+
         if (zone_number == 0 || zone_number == 1)
         {
             // Zone 0-1 (Surface et 0-50m) : Méduses et Poissons-Épées
@@ -131,7 +146,7 @@ void generate_creatures(int zone_depth, Creature creature_array[], size_t array_
             int choice = random_range(0, 1);
             random_type = (choice == 0) ? CREATURE_SHARK : CREATURE_GIANT_CRAB;
         }
-        else  // zone_number == 3
+        else // zone_number == 3
         {
             // Zone 3 (150m+) : Toutes les créatures y compris le Kraken
             int random_type_value = random_range(0, CREATURE_COUNT - 1);

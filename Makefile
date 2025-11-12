@@ -11,12 +11,11 @@ $(EXEC): $(OBJ)
 	$(CC) -o $@ $^
 
 $(OBJDIR)/%.o: src/%.c
-	@if not exist $(OBJDIR) mkdir $(OBJDIR)
+	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@if exist $(OBJDIR) rmdir /S /Q $(OBJDIR)
-	@if exist $(EXEC) del $(EXEC)
+	@rm -rf $(OBJDIR) $(EXEC)
 
 valgrind: $(EXEC)
 	@echo "Valgrind is not natively available on Windows."

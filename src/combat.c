@@ -9,6 +9,9 @@
 #include "../include/creature.h"
 #include "../include/ascii_art.h"
 
+static void execute_skill_communication(Skill *skill, Creature creatures[], int creature_count);
+static void execute_skill_vortex(Skill *skill, Creature creatures[], int creature_count);
+
 static int compare_creatures_by_speed(const void *a, const void *b)
 {
     Creature *creatureA = (Creature *)a;
@@ -20,84 +23,78 @@ static int compare_creatures_by_speed(const void *a, const void *b)
 static void handle_kraken_attack(Player *player, Creature *creature)
 {
     int damage = 0;
-    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
+    int oxygen_stress = random_range(1, 2);
 
     printf(COLOR_MAGENTA "Étreinte tentaculaire du Kraken !\n" COLOR_RESET);
     damage = calculate_creature_damage(creature, player);
     player_take_damage(player, damage);
-    player_use_oxygen(player, oxygen_drain);
+    player_use_oxygen(player, oxygen_stress);
 
     if (player_is_alive(player))
     {
         printf(COLOR_MAGENTA "Le Kraken frappe à nouveau !\n" COLOR_RESET);
         damage = calculate_creature_damage(creature, player);
+        oxygen_stress = random_range(1, 2);
         player_take_damage(player, damage);
-        player_use_oxygen(player, oxygen_drain);
+        player_use_oxygen(player, oxygen_stress);
     }
 }
 
 static void handle_shark_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
+    int oxygen_stress = random_range(1, 2);
     int damage = calculate_creature_damage(creature, player);
 
     if (creature->hp_current < (creature->hp_max / 2))
     {
         printf(COLOR_RED "Frénésie sanguinaire du Requin !\n" COLOR_RESET);
-        damage = (int)((float)damage * 1.20f);  // Réduit de 1.30 à 1.20
+        damage = (int)((float)damage * 1.30f);
     }
     printf("%s attaque ! Vous perdez %d PV.\n", creature->name, damage);
     player_take_damage(player, damage);
-    player_use_oxygen(player, oxygen_drain);
+    player_use_oxygen(player, oxygen_stress);
 }
 
 static void handle_jellyfish_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = 1;
-    
-    // Vérifier si le joueur est déjà paralysé OU si cette méduse a déjà appliqué son effet
-    if (!player->is_paralyzed && creature->effect_duration == 0)
+    int oxygen_stress = random_range(1, 2);
+
+    printf(COLOR_CYAN "Piqûre paralysante de la Méduse !\n" COLOR_RESET);
+    int damage = calculate_creature_damage(creature, player);
+    player_take_damage(player, damage);
+    player_use_oxygen(player, oxygen_stress);
+
+    if (player->attacks_reduced_next_turn == 0)
     {
-        printf(COLOR_CYAN "Piqûre paralysante de la Méduse !\n" COLOR_RESET);
-        int damage = calculate_creature_damage(creature, player);
-        player_take_damage(player, damage);
-        player_use_oxygen(player, oxygen_drain);
-        
-        player->is_paralyzed = 1;
-        player->paralysis_turns_left = 1;
-        creature->effect_duration = 1;  // Marquer que l'effet a été utilisé
-        printf(COLOR_YELLOW "Vous êtes paralysé pour 1 tour !\n" COLOR_RESET);
-    }
-    else
-    {
-        // Attaque normale sans effet de statut
-        printf(COLOR_CYAN "La Méduse vous frappe !\n" COLOR_RESET);
-        int damage = calculate_creature_damage(creature, player);
-        player_take_damage(player, damage);
-        player_use_oxygen(player, oxygen_drain);
+        printf(COLOR_YELLOW "Vous êtes déstabilisé ! Vous perdez 1 action au prochain tour.\n" COLOR_RESET);
+        player->attacks_reduced_next_turn = 1;
     }
 }
 
 static void handle_swordfish_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
+    int oxygen_stress = random_range(1, 2);
     printf(COLOR_BLUE "Charge perforante du Poisson-Épée !\n" COLOR_RESET);
+
     int defense_ignored = 2;
     int attack_power = random_range(creature->attack_min, creature->attack_max);
-    int damage = attack_power - (player->equipped_armor.defense - defense_ignored);
+
+    int player_defense = player->equipped_armor.defense;
+    int damage = attack_power - (player_defense - defense_ignored);
+
     damage = (damage > 0) ? damage : 1;
 
     player_take_damage(player, damage);
-    player_use_oxygen(player, oxygen_drain);
+    player_use_oxygen(player, oxygen_stress);
 }
 
 static void handle_default_attack(Player *player, Creature *creature)
 {
-    int oxygen_drain = 1;  // Réduit de random_range(1, 2) à 1
+    int oxygen_stress = random_range(1, 2);
     int damage = calculate_creature_damage(creature, player);
     printf("%s attaque ! Vous perdez %d PV.\n", creature->name, damage);
     player_take_damage(player, damage);
-    player_use_oxygen(player, oxygen_drain);
+    player_use_oxygen(player, oxygen_stress);
 }
 
 static int validate_skill_use(Player *player, Skill *skill)
@@ -150,10 +147,31 @@ static void execute_skill_discharge(Skill *skill, Creature creatures[], int crea
     }
 }
 
-static void execute_skill_unimplemented(Skill *skill)
+static void execute_skill_communication(Skill *skill, Creature creatures[], int creature_count)
 {
-    printf("Compétence '%s' non implémentée.\n", skill->name);
-    skill->cooldown_current = 0;
+    printf(COLOR_GREEN "Vous utilisez '%s' !\n" COLOR_RESET, skill->name);
+    Creature *target = select_target(creatures, creature_count);
+    if (target != NULL)
+    {
+        printf("%s est maintenant pacifié pour 1 tour !\n", target->name);
+        target->is_pacified = 1;
+        target->pacified_turns_left = 1;
+    }
+}
+
+static void execute_skill_vortex(Skill *skill, Creature creatures[], int creature_count)
+{
+    printf(COLOR_CYAN "Vous lancez '%s' !\n" COLOR_RESET, skill->name);
+    for (int i = 0; i < creature_count; i++)
+    {
+        if (creatures[i].is_alive)
+        {
+            creatures[i].speed -= 2;
+            if (creatures[i].speed < 0)
+                creatures[i].speed = 0;
+            printf("%s est ralenti (-2 Vitesse) !\n", creatures[i].name);
+        }
+    }
 }
 
 int start_combat(Player *player, Creature creatures[], int creature_count)
@@ -172,23 +190,10 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
         print_title("COMBAT SOUS-MARIN");
         display_combat_status(player, creatures, creature_count);
 
-        if (player->is_paralyzed)
+        if (player_turn(player, creatures, creature_count) == 0)
         {
-            printf(COLOR_YELLOW "Vous êtes paralysé et ne pouvez pas bouger !\n" COLOR_RESET);
-            player->paralysis_turns_left--;
-            if (player->paralysis_turns_left <= 0)
-            {
-                player->is_paralyzed = 0;
-                printf(COLOR_GREEN "Vous pouvez de nouveau bouger !\n" COLOR_RESET);
-            }
-        }
-        else
-        {
-            if (player_turn(player, creatures, creature_count) == 0)
-            {
-                combat_result = -1;
-                break;
-            }
+            combat_result = -1;
+            break;
         }
 
         combat_result = check_combat_end(player, creatures, creature_count);
@@ -201,17 +206,22 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
         if (combat_result != 0)
             break;
 
-        int oxygen_loss = random_range(1, 3) + player->current_zone;  // Réduit de (2, 5) + zone*2 à (1, 3) + zone
+        int oxygen_loss = random_range(2, 5) + player->current_zone;
         player_use_oxygen(player, oxygen_loss);
+
         if (player->oxygen <= 0)
         {
             printf(COLOR_RED "Vous n'avez plus d'oxygène !\n" COLOR_RESET);
             if (player_is_alive(player))
-                player_take_damage(player, 3);  // Réduit de 5 à 3
+                player_take_damage(player, 5);
         }
 
-        if (player->fatigue < 5)
-            player->fatigue++;
+        player_restore_oxygen(player, 8);
+
+        if (player->fatigue > 0)
+        {
+            player->fatigue--;
+        }
 
         player_update_cooldowns(player);
         turn++;
@@ -226,54 +236,52 @@ void display_combat_status(const Player *player, const Creature creatures[], int
     assert(creatures != NULL);
 
     display_player_ascii();
-    
+
     printf("\n");
     printf(COLOR_CYAN "| PLONGEUR: %s (Niveau %d)" COLOR_RESET, player->name, player->level);
     printf("\n");
     print_separator('-', 60);
-    
-    // Barre de vie du joueur
+
     printf("| " COLOR_BOLD "PV:  " COLOR_RESET);
     display_health_bar(player->hp, player->max_hp, 30);
     printf(" %d/%d\n", player->hp, player->max_hp);
-    
-    // Barre d'oxygène du joueur
+
     printf("| " COLOR_BOLD "O2:  " COLOR_RESET);
     display_oxygen_bar(player->oxygen, player->max_oxygen, 30);
     printf(" %d/%d\n", player->oxygen, player->max_oxygen);
-    
+
+    printf("| " COLOR_BOLD "Fatigue: " COLOR_RESET "[%d/5]\n", player->fatigue);
+
     if (player->is_paralyzed)
     {
         printf("| " COLOR_YELLOW "* PARALYSE (%d tour)" COLOR_RESET "\n", player->paralysis_turns_left);
     }
-    
+
     print_separator('=', 60);
     printf("\n");
 
-    // Affichage des créatures avec leurs ASCII arts
     printf(COLOR_RED "| ADVERSAIRES:" COLOR_RESET "\n");
     print_separator('-', 60);
-    
+
     for (int i = 0; i < creature_count; i++)
     {
         if (creatures[i].is_alive)
         {
-            // Affichage de l'ASCII art de la créature
             printf("\n");
             display_creature_ascii(creatures[i].type);
-            
+
             printf("\n| [%d] %s %s\n", i + 1, get_creature_emoji(creatures[i].type), creatures[i].name);
             printf("|     " COLOR_BOLD "PV:  " COLOR_RESET);
             display_health_bar(creatures[i].hp_current, creatures[i].hp_max, 25);
             printf(" %d/%d\n", creatures[i].hp_current, creatures[i].hp_max);
-            
+
             if (i < creature_count - 1 && creatures[i + 1].is_alive)
             {
                 printf("|\n");
             }
         }
     }
-    
+
     print_separator('=', 60);
 }
 
@@ -282,12 +290,33 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
     assert(player != NULL);
     assert(creatures != NULL);
 
-    // Le joueur a autant d'actions que de créatures vivantes
-    int attacks_left = count_alive_creatures(creatures, creature_count);
+    int attacks_left;
+    if (player->fatigue <= 1)
+    {
+        attacks_left = 3;
+    }
+    else if (player->fatigue <= 3)
+    {
+        attacks_left = 2;
+    }
+    else
+    {
+        attacks_left = 1;
+    }
+
+    if (player->attacks_reduced_next_turn > 0)
+    {
+        printf(COLOR_YELLOW "À cause de la piqûre, vous perdez %d action(s) ce tour !\n" COLOR_RESET, player->attacks_reduced_next_turn);
+        attacks_left -= player->attacks_reduced_next_turn;
+        player->attacks_reduced_next_turn = 0;
+        if (attacks_left < 0)
+            attacks_left = 0;
+    }
 
     while (attacks_left > 0)
     {
-        if (check_combat_end(player, creatures, creature_count) != 0) return 1;
+        if (check_combat_end(player, creatures, creature_count) != 0)
+            return 1;
 
         display_combat_menu(attacks_left);
         char choice = get_char_input();
@@ -302,12 +331,18 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
                 attack_creature(player, target);
                 attacks_left--;
                 player_use_oxygen(player, player->equipped_weapon.oxygen_cost_per_attack);
+                if (player->fatigue < 5)
+                    player->fatigue++;
             }
             break;
         }
         case '2':
             if (handle_skill_choice(player, creatures, creature_count) == 1)
+            {
                 attacks_left--;
+                if (player->fatigue < 5)
+                    player->fatigue++;
+            }
             pause_screen();
             break;
         case '3':
@@ -341,6 +376,18 @@ void creatures_turn(Player *player, Creature creatures[], int creature_count)
     {
         if (!creatures[i].is_alive)
             continue;
+
+        if (creatures[i].is_pacified)
+        {
+            printf("%s est pacifié et ne vous attaque pas !\n", creatures[i].name);
+            creatures[i].pacified_turns_left--;
+            if (creatures[i].pacified_turns_left <= 0)
+            {
+                creatures[i].is_pacified = 0;
+            }
+            continue;
+        }
+
         if (!player_is_alive(player))
             break;
 
@@ -371,7 +418,7 @@ int attack_creature(Player *player, Creature *target)
     assert(player != NULL);
     assert(target != NULL);
 
-    int damage = calculate_player_damage(player, target);
+    int damage = calculate_player_damage(player, target, 0);
     target->hp_current -= damage;
 
     printf("Vous attaquez %s avec %s et infligez %d points de dégâts.\n",
@@ -386,19 +433,24 @@ int attack_creature(Player *player, Creature *target)
     return 1;
 }
 
-int calculate_player_damage(const Player *player, const Creature *target)
+int calculate_player_damage(const Player *player, const Creature *target, int defense_ignored)
 {
     assert(player != NULL);
     assert(target != NULL);
 
     int attack_power = random_range(player->equipped_weapon.attack_min,
                                     player->equipped_weapon.attack_max);
-    int damage = attack_power - target->defense;
+
+    int target_defense = target->defense - player->equipped_weapon.defense_ignore - defense_ignored;
+    if (target_defense < 0)
+        target_defense = 0;
+
+    int damage = attack_power - target_defense;
 
     if (target->type == CREATURE_GIANT_CRAB)
     {
         printf(COLOR_BLUE "La Carapace Durcie du Crabe réduit les dégâts !\n" COLOR_RESET);
-        damage = (int)((float)damage * 0.85f); 
+        damage = (int)((float)damage * 0.80f);
     }
     return (damage > 0) ? damage : 1;
 }
@@ -502,7 +554,7 @@ void display_skills_menu(const Player *player)
     }
 
     if (available_skills == 0)
-        print_info("Vous n'avez débloqué aucune compétence.");
+        printf(COLOR_YELLOW "Vous n'avez débloqué aucune compétence.\n" COLOR_RESET);
 
     printf("\n  [0] Annuler\n");
 }
@@ -539,9 +591,11 @@ int handle_skill_choice(Player *player, Creature creatures[], int creature_count
         execute_skill_discharge(skill, creatures, creature_count);
         break;
     case SKILL_MARINE_COMMUNICATION:
+        execute_skill_communication(skill, creatures, creature_count);
+        break;
     case SKILL_WATER_VORTEX:
-        execute_skill_unimplemented(skill);
-        return 0;
+        execute_skill_vortex(skill, creatures, creature_count);
+        break;
     case SKILL_COUNT:
     default:
         print_error("Erreur de compétence inconnue.");
