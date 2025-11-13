@@ -130,13 +130,13 @@ void manage_inventory(Player *player)
     }
 }
 
-void use_inventory_item(Player *player)
+int use_inventory_item(Player *player)
 {
     if (player->inventory_count == 0)
     {
         printf(COLOR_YELLOW "Aucun objet à utiliser.\n" COLOR_RESET);
         pause_screen();
-        return;
+        return 0;
     }
 
     printf("\n" COLOR_BOLD "Quel objet voulez-vous utiliser ? (1-%d, 0 pour annuler): " COLOR_RESET, player->inventory_count);
@@ -144,14 +144,14 @@ void use_inventory_item(Player *player)
     char choice = get_char_input();
 
     if (choice == '0')
-        return;
+        return 0;
 
     int index = choice - '1'; // conversion du char en index int d'array
     if (index < 0 || index >= player->inventory_count)
     {
         print_error("Numéro d'objet invalide !");
         pause_screen();
-        return;
+        return 0;
     }
 
     Item *item = &player->inventory[index];
@@ -173,7 +173,7 @@ void use_inventory_item(Player *player)
         {
             printf(COLOR_YELLOW "Vos HP sont déjà au maximum !\n" COLOR_RESET);
             pause_screen();
-            return;
+            return 0;
         }
         break;
 
@@ -189,7 +189,7 @@ void use_inventory_item(Player *player)
         {
             printf(COLOR_YELLOW "Votre oxygène est déjà au maximum !\n" COLOR_RESET);
             pause_screen();
-            return;
+            return 0;
         }
         break;
 
@@ -204,7 +204,7 @@ void use_inventory_item(Player *player)
         {
             printf(COLOR_YELLOW "Vous n'êtes pas empoisonné.\n" COLOR_RESET);
             pause_screen();
-            return;
+            return 0;
         }
         break;
 
@@ -234,7 +234,7 @@ void use_inventory_item(Player *player)
     default:
         printf(COLOR_RED "Cet objet ne peut pas être utilisé.\n" COLOR_RESET);
         pause_screen();
-        return;
+        return 0;
     }
 
     // Réduire la quantité ou supprimer l'objet
@@ -246,6 +246,7 @@ void use_inventory_item(Player *player)
     }
 
     pause_screen();
+    return 1;
 }
 
 void examine_inventory_item(Player *player)

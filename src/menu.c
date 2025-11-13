@@ -25,7 +25,7 @@ static void display_map_row(Player *player, Map *map, int zone, const char *dest
 {
     char zone_name[20];
     char zone_depth[20];
-    
+
     if (zone == 0)
     {
         strcpy(zone_name, "SURFACE");
@@ -169,7 +169,7 @@ int handle_menu_choice(int choice, Player *player, Map *map, int *game_time)
     switch (choice)
     {
     case 1:
-        explore_map(player, map);
+        explore_map(player, map, game_time);
         break;
     case 2:
         player_display_stats(player);
@@ -212,7 +212,7 @@ int handle_menu_choice(int choice, Player *player, Map *map, int *game_time)
     return 1; // Continuer le jeu
 }
 
-void explore_map(Player *player, Map *map)
+void explore_map(Player *player, Map *map, int *game_time)
 {
     clear_screen();
 
@@ -227,6 +227,7 @@ void explore_map(Player *player, Map *map)
     printf(COLOR_GREEN "1." COLOR_RESET " ⬆️  Remonter à la zone supérieure\n");
     printf(COLOR_GREEN "2." COLOR_RESET " ⬇️  Descendre à la zone inférieure\n");
     printf(COLOR_GREEN "3." COLOR_RESET " 🎯 Choisir une destination dans cette zone\n");
+    printf(COLOR_GREEN "4." COLOR_RESET " 💾 Sauvegarder la partie\n");
     printf(COLOR_GREEN "0." COLOR_RESET " 🔙 Retour au menu principal\n");
 
     printf("\n" COLOR_BOLD "Votre choix: " COLOR_RESET);
@@ -240,13 +241,13 @@ void explore_map(Player *player, Map *map)
             player->current_zone--;
             printf(COLOR_CYAN "Vous remontez vers la zone %d...\n" COLOR_RESET, player->current_zone);
             pause_screen();
-            explore_map(player, map);
+            explore_map(player, map, game_time);
         }
         else
         {
             printf(COLOR_YELLOW "Vous êtes déjà à la surface !\n" COLOR_RESET);
             pause_screen();
-            explore_map(player, map);
+            explore_map(player, map, game_time);
         }
         break;
     case '2': // Zone inférieure
@@ -255,25 +256,30 @@ void explore_map(Player *player, Map *map)
             player->current_zone++;
             printf(COLOR_BLUE "Vous descendez vers la zone %d...\n" COLOR_RESET, player->current_zone);
             pause_screen();
-            explore_map(player, map);
+            explore_map(player, map, game_time);
         }
         else
         {
             printf(COLOR_RED "⚠️  Cette zone est verrouillée ! Terminez d'abord la zone actuelle.\n" COLOR_RESET);
             pause_screen();
-            explore_map(player, map);
+            explore_map(player, map, game_time);
         }
         break;
     case '3': // Choisir une destination
         select_destination(player, map);
-        explore_map(player, map);
+        explore_map(player, map, game_time);
+        break;
+    case '4': // Sauvegarder
+        save_game(player, map, *game_time);
+        pause_screen();
+        explore_map(player, map, game_time);
         break;
     case '0': // Retour au menu
         return;
     default:
         print_error("Choix invalide !");
         pause_screen();
-        explore_map(player, map);
+        explore_map(player, map, game_time);
         break;
     }
 }
@@ -283,20 +289,20 @@ void display_zone_map(Player *player, Map *map)
         {"🚤 Base", "🌊 Océan", "🌊 Océan", "🚤 Bateau"},
         {"🪸 Récif", "💰 Épave", "🌿 Algues", "🕳️ Grotte"},
         {"🦈 Requin", "❌ Vide", "🦑 Kraken", "❌ Vide"},
-        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}
-    };
-    
+        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}};
+
     const char *abyss_destinations[4] = {"💀 Danger", "💀 Danger", "💀 Danger", "💀 Danger"};
 
     display_map_header();
-    
+
     int zones_to_display = (player->current_zone + 2 > map->zone_count) ? map->zone_count : player->current_zone + 2;
-    if (zones_to_display > map->zone_count) zones_to_display = map->zone_count;
-    
+    if (zones_to_display > map->zone_count)
+        zones_to_display = map->zone_count;
+
     for (int zone = 0; zone < zones_to_display; zone++)
     {
         const char *destinations[4][4];
-        
+
         if (zone < 4)
         {
             for (int i = 0; i < 4; i++)
@@ -309,16 +315,16 @@ void display_zone_map(Player *player, Map *map)
                 for (int j = 0; j < 4; j++)
                     destinations[i][j] = abyss_destinations[j];
         }
-        
+
         display_map_row(player, map, zone, destinations);
     }
-    
+
     display_map_legend();
-    
+
     if (player->current_zone >= 4)
     {
         printf("\n" COLOR_RED "⚠️  VOUS ÊTES DANS LES ABYSSES PROFONDS - ZONE %d\n" COLOR_RESET, player->current_zone);
-        printf(COLOR_YELLOW "Les créatures sont %d%% plus puissantes qu'en surface !\n" COLOR_RESET, 
+        printf(COLOR_YELLOW "Les créatures sont %d%% plus puissantes qu'en surface !\n" COLOR_RESET,
                (player->current_zone - 3) * 10);
     }
 }
@@ -414,8 +420,7 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
         {"Base de plongée", "Océan libre", "Océan libre", "Bateau marchand"},
         {"Récif corallien", "Épave du galion", "Forêt d'algues", "Grotte sous-marine"},
         {"Territoire du requin", "Zone vide", "Repaire du Kraken", "Zone vide"},
-        {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}
-    };
+        {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}};
 
     printf(COLOR_CYAN COLOR_BOLD "🏊 EXPLORATION: %s\n" COLOR_RESET, dest_names[zone][destination]);
     print_separator('=', 60);
@@ -427,12 +432,12 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
     else
     {
         int monsters_count = random_range(1, 4);
-        
+
         if (zone == 0 && (destination == 0 || destination == 3))
             monsters_count = 0;
         else if (zone == 2 && (destination == 0 || destination == 2))
             monsters_count = 1;
-        
+
         if (monsters_count > 0)
             handle_hostile_destination(player, map, zone, destination, monsters_count);
         else

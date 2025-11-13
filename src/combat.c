@@ -8,6 +8,7 @@
 #include "../include/constants.h"
 #include "../include/creature.h"
 #include "../include/ascii_art.h"
+#include "../include/inventory.h"
 
 static void execute_skill_communication(Skill *skill, Creature creatures[], int creature_count);
 static void execute_skill_vortex(Skill *skill, Creature creatures[], int creature_count);
@@ -346,8 +347,12 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
             pause_screen();
             break;
         case '3':
-            printf("Inventaire non implémenté.\n");
-            pause_screen();
+            if (use_inventory_item(player) == 1)
+            {
+                attacks_left--;
+                if (player->fatigue < 5)
+                    player->fatigue++;
+            }
             break;
         case '4':
             attacks_left = 0;

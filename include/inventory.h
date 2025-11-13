@@ -5,7 +5,7 @@
 
 void manage_inventory(Player *player);
 
-void use_inventory_item(Player *player);
+int use_inventory_item(Player *player);
 void examine_inventory_item(Player *player);
 void drop_inventory_item(Player *player);
 

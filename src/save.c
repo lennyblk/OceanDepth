@@ -20,10 +20,9 @@ int save_game(const Player *player, const Map *map, int game_time)
         fprintf(stderr, "Erreur: Pointeur NULL dans save_game\n");
         return 0;
     }
+    assert(player->current_zone >= 0 && player->current_zone < 100);
 
-    assert(map->current_zone_index >= 0 && map->current_zone_index < 10);
-
-    current_zone = map->zones[map->current_zone_index];
+    current_zone = map->zones[player->current_zone];
     if (!current_zone.can_save)
     {
         fprintf(stderr, "\n⚠️  SAUVEGARDE IMPOSSIBLE ⚠️\n");
@@ -109,10 +108,11 @@ int load_game(Player *player, Map *map, int *game_time)
     memcpy(player, &save_data.player, sizeof(Player));
     memcpy(map, &save_data.map, sizeof(Map));
     *game_time = save_data.game_time;
+    map->current_zone_index = player->current_zone;
 
     printf("\n=== Partie chargée avec succès ===\n");
     printf("Joueur: %s - Niveau %d\n", player->name, player->level);
-    printf("Zone actuelle: %s\n", map->zones[map->current_zone_index].name);
+    printf("Zone actuelle: %s\n", map->zones[player->current_zone].name);
     return 1;
 }
 
