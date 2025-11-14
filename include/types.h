@@ -69,6 +69,15 @@ typedef enum
     WEAPON_COUNT
 } WeaponType;
 
+typedef enum
+{
+    ARMOR_BASIC_SUIT,
+    ARMOR_REINFORCED_SUIT,
+    ARMOR_INSULATED_SUIT,
+    ARMOR_ADVANCED_SUIT,
+    ARMOR_COUNT
+} ArmorType;
+
 // STRUCTURES DE CRÉATURE =======================================================================================================
 typedef struct
 {
@@ -103,9 +112,9 @@ typedef struct
     Rarity rarity;
 } Weapon;
 
-// Armure (combinaison)
 typedef struct
 {
+    ArmorType type;
     char name[40];
     int defense;
     int oxygen_cost_per_turn;

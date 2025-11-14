@@ -20,7 +20,7 @@ void initialize_shop_items_for_zone(int zone)
 
     shop_counts[zone] = 0;
 
-    // Zone 0
+    // Zone 0:
     if (zone == 0)
     {
         shops[zone][shop_counts[zone]++] = (ShopItem){
@@ -29,30 +29,46 @@ void initialize_shop_items_for_zone(int zone)
             .description = "Restaure 30 points d'oxygene instantanement",
             .price = 10,
             .stock = -1,
-            .min_zone_required = 0};
+            .min_zone_required = 0,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_HEALTH_KIT,
             .name = "Kit medical",
             .description = "Restaure 40 points de vie",
             .price = 20,
             .stock = -1,
-            .min_zone_required = 0};
+            .min_zone_required = 0,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_STIMULANT,
             .name = "Stimulant",
             .description = "Reduit la fatigue et boost temporairement",
             .price = 30,
             .stock = 10,
-            .min_zone_required = 0};
+            .min_zone_required = 0,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_ANTIDOTE,
             .name = "Antidote",
             .description = "Soigne le poison et la paralysie",
             .price = 25,
             .stock = 5,
-            .min_zone_required = 0};
+            .min_zone_required = 0,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
     }
-    // Zones 1-3: 
+    // Zones 1-3:
     else if (zone >= 1 && zone <= 3)
     {
         shops[zone][shop_counts[zone]++] = (ShopItem){
@@ -61,28 +77,44 @@ void initialize_shop_items_for_zone(int zone)
             .description = "Restaure 30 points d'oxygene",
             .price = 15,
             .stock = 20,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_HEALTH_KIT,
             .name = "Kit medical",
             .description = "Restaure 40 points de vie",
             .price = 25,
             .stock = 15,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_STIMULANT,
             .name = "Stimulant",
             .description = "Reduit la fatigue et boost temporairement",
             .price = 35,
             .stock = 12,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_ANTIDOTE,
             .name = "Antidote",
             .description = "Soigne le poison et la paralysie",
             .price = 30,
             .stock = 10,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
     }
     // Zones >=4: 
     else
@@ -90,31 +122,47 @@ void initialize_shop_items_for_zone(int zone)
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_OXYGEN_CAPSULE,
             .name = "Capsule d'oxygene (rare)",
-            .description = "Restaure 30 points d'oxygene - formulation rare",
+            .description = "Restaure 50 points d'oxygene - formulation rare",
             .price = 30,
             .stock = 5,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 50,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_HEALTH_KIT,
             .name = "Kit medical (ameliore)",
-            .description = "Restaure 60 points de vie",
+            .description = "Restaure 80 points de vie",
             .price = 55,
             .stock = 4,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 80,
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_STIMULANT,
             .name = "Stimulant (puissant)",
             .description = "Reduit la fatigue et booste fortement",
             .price = 70,
             .stock = 3,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 0,
+            .oxygen_restore_override = 20, 
+            .fatigue_reduce_override = 40,
+            .removes_effect_override = 0};
         shops[zone][shop_counts[zone]++] = (ShopItem){
             .type = ITEM_ANTIDOTE,
             .name = "Antidote (concentre)",
             .description = "Soigne le poison et la paralysie plus efficacement",
             .price = 60,
             .stock = 3,
-            .min_zone_required = zone};
+            .min_zone_required = zone,
+            .hp_restore_override = 20, 
+            .oxygen_restore_override = 0,
+            .fatigue_reduce_override = 0,
+            .removes_effect_override = 1};
     }
 
     shop_initialized[zone] = 1;
@@ -303,10 +351,10 @@ int can_buy_item(Player *player, ShopItem *item)
     return 1;
 }
 
-// Add an item to player's inventory (uses ItemType values defined in types.h)
-int add_item_to_inventory(Player *player, ItemType type)
+// Modified signature: now receives ShopItem* to preserve overrides
+int add_item_to_inventory(Player *player, ShopItem *shop_item)
 {
-    if (player == NULL)
+    if (player == NULL || shop_item == NULL)
         return 0;
 
     if (player->inventory_count >= 4)
@@ -314,41 +362,42 @@ int add_item_to_inventory(Player *player, ItemType type)
 
     Item new_item;
     memset(&new_item, 0, sizeof(new_item));
-    new_item.type = type;
+    new_item.type = shop_item->type;
     new_item.quantity = 1;
 
-    switch (type)
+    // Use overrides when fournis (non-zero), sinon valeurs par défaut
+    switch (shop_item->type)
     {
     case ITEM_OXYGEN_CAPSULE:
-        strcpy(new_item.name, "Capsule d'oxygene");
-        new_item.oxygen_restore = 30;
-        new_item.hp_restore = 0;
-        new_item.fatigue_reduce = 0;
-        new_item.removes_effect = 0;
+        strcpy(new_item.name, shop_item->name);
+        new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 30;
+        new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 0;
+        new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
+        new_item.removes_effect = shop_item->removes_effect_override;
         break;
 
     case ITEM_HEALTH_KIT:
-        strcpy(new_item.name, "Kit medical");
-        new_item.hp_restore = 40;
-        new_item.oxygen_restore = 0;
-        new_item.fatigue_reduce = 0;
-        new_item.removes_effect = 0;
+        strcpy(new_item.name, shop_item->name);
+        new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 40;
+        new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 0;
+        new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
+        new_item.removes_effect = shop_item->removes_effect_override;
         break;
 
     case ITEM_STIMULANT:
-        strcpy(new_item.name, "Stimulant");
-        new_item.fatigue_reduce = 20;
-        new_item.oxygen_restore = 10;
-        new_item.hp_restore = 0;
-        new_item.removes_effect = 0;
+        strcpy(new_item.name, shop_item->name);
+        new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 20;
+        new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 10;
+        new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 0;
+        new_item.removes_effect = shop_item->removes_effect_override;
         break;
 
     case ITEM_ANTIDOTE:
-        strcpy(new_item.name, "Antidote");
-        new_item.removes_effect = 1;
-        new_item.hp_restore = 10;
-        new_item.oxygen_restore = 0;
-        new_item.fatigue_reduce = 0;
+        strcpy(new_item.name, shop_item->name);
+        new_item.removes_effect = (shop_item->removes_effect_override > 0) ? shop_item->removes_effect_override : 1;
+        new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 10;
+        new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 0;
+        new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
         break;
 
     default:
@@ -390,7 +439,8 @@ void buy_item(Player *player, ShopItem *item)
     {
         player->pearls -= item->price;
 
-        if (add_item_to_inventory(player, item->type))
+        // Passer le ShopItem pour préserver les overrides
+        if (add_item_to_inventory(player, item))
         {
             printf(COLOR_GREEN "\n✅ Achat reussi !\n" COLOR_RESET);
             printf("Vous avez achete: %s\n", item->name);
