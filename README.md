@@ -6,7 +6,7 @@ An underwater terminal adventure game where you explore the ocean depths, fight 
 
 ### Option 1: Download Pre-compiled Binary (Recommended)
 
-Go to the [**Releases**](https://github.com/lennyblackett/OceanDepth/releases) page and download the version for your system:
+Go to the [**Releases**]([https://github.com/lennyblackett/OceanDepth/releases](https://github.com/lennyblk/OceanDepth/releases/tag/v1.0)) page and download the version for your system:
 
 - **macOS (Apple Silicon M1/M2/M3/M4)**: `oceandepth_macos_arm64`
 - **Windows**: `oceandepth_windows.exe`
