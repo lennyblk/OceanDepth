@@ -9,7 +9,7 @@ int display_main_menu(Player *player);
 int handle_menu_choice(int choice, Player *player, Map *map, int *game_time);
 
 void explore_map(Player *player, Map *map, int *game_time);
-void visit_shop(Player *player);
+void visit_shop(Player *player, Map *map); 
 void rest_at_surface(Player *player);
 void manage_inventory(Player *player);
 void manage_equipment(Player *player);

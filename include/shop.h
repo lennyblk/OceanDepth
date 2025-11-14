@@ -12,11 +12,13 @@ typedef struct {
     int min_zone_required; 
 } ShopItem;
 
-void visit_shop(Player *player);
+void visit_shop(Player *player, Map *map);
 int is_shop_unlocked(Player *player, Map *map);
-void display_shop_menu(Player *player);
+void display_shop_menu(Player *player, int zone);
 void buy_item(Player *player, ShopItem *item);
 void sell_items(Player *player);
+
+void initialize_shop_items_for_zone(int zone);
 
 void initialize_shop_items(ShopItem shop_items[], int *item_count);
 int can_buy_item(Player *player, ShopItem *item);

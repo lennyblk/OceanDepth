@@ -176,7 +176,7 @@ int handle_menu_choice(int choice, Player *player, Map *map, int *game_time)
         pause_screen();
         break;
     case 3:
-        visit_shop(player);
+        visit_shop(player, map); 
         break;
     case 4:
         rest_at_surface(player);

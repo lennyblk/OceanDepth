@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c99 -g -I include
 SRC = $(wildcard src/*.c)
 OBJDIR = obj
 OBJ = $(patsubst src/%.c,$(OBJDIR)/%.o,$(SRC))
-EXEC = oceandepth.exe
+EXEC = oceandepths.exe
 
 all: $(EXEC)
 
@@ -11,11 +11,12 @@ $(EXEC): $(OBJ)
 	$(CC) -o $@ $^
 
 $(OBJDIR)/%.o: src/%.c
-	@mkdir -p $(OBJDIR)
+	@if not exist $(OBJDIR) mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -rf $(OBJDIR) $(EXEC)
+	@if exist $(OBJDIR) rmdir /S /Q $(OBJDIR)
+	@if exist $(EXEC) del $(EXEC)
 
 valgrind: $(EXEC)
 	@echo "Valgrind is not natively available on Windows."

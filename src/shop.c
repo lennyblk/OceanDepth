@@ -7,61 +7,134 @@
 #include "../include/menu.h"
 #include "../include/ascii_art.h"
 
-void initialize_shop_items(ShopItem shop_items[], int *item_count)
+static ShopItem shops[MAX_ZONES][10];
+static int shop_counts[MAX_ZONES];
+static int shop_initialized[MAX_ZONES];
+
+void initialize_shop_items_for_zone(int zone)
 {
-    *item_count = 0;
+    if (zone < 0 || zone >= MAX_ZONES)
+        return;
+    if (shop_initialized[zone])
+        return;
 
-    // ITEM_OXYGEN_CAPSULE
-    shop_items[*item_count] = (ShopItem){
-        .type = ITEM_OXYGEN_CAPSULE,
-        .name = "Capsule d'oxygene",
-        .description = "Restaure 30 points d'oxygene instantanement",
-        .price = 15,
-        .stock = -1,
-        .min_zone_required = 0};
-    (*item_count)++;
+    shop_counts[zone] = 0;
 
-    // ITEM_HEALTH_KIT
-    shop_items[*item_count] = (ShopItem){
-        .type = ITEM_HEALTH_KIT,
-        .name = "Kit medical",
-        .description = "Restaure 40 points de vie",
-        .price = 25,
-        .stock = -1,
-        .min_zone_required = 0};
-    (*item_count)++;
+    // Zone 0
+    if (zone == 0)
+    {
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_OXYGEN_CAPSULE,
+            .name = "Capsule d'oxygene",
+            .description = "Restaure 30 points d'oxygene instantanement",
+            .price = 10,
+            .stock = -1,
+            .min_zone_required = 0};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_HEALTH_KIT,
+            .name = "Kit medical",
+            .description = "Restaure 40 points de vie",
+            .price = 20,
+            .stock = -1,
+            .min_zone_required = 0};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_STIMULANT,
+            .name = "Stimulant",
+            .description = "Reduit la fatigue et boost temporairement",
+            .price = 30,
+            .stock = 10,
+            .min_zone_required = 0};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_ANTIDOTE,
+            .name = "Antidote",
+            .description = "Soigne le poison et la paralysie",
+            .price = 25,
+            .stock = 5,
+            .min_zone_required = 0};
+    }
+    // Zones 1-3: 
+    else if (zone >= 1 && zone <= 3)
+    {
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_OXYGEN_CAPSULE,
+            .name = "Capsule d'oxygene (moyen)",
+            .description = "Restaure 30 points d'oxygene",
+            .price = 15,
+            .stock = 20,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_HEALTH_KIT,
+            .name = "Kit medical",
+            .description = "Restaure 40 points de vie",
+            .price = 25,
+            .stock = 15,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_STIMULANT,
+            .name = "Stimulant",
+            .description = "Reduit la fatigue et boost temporairement",
+            .price = 35,
+            .stock = 12,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_ANTIDOTE,
+            .name = "Antidote",
+            .description = "Soigne le poison et la paralysie",
+            .price = 30,
+            .stock = 10,
+            .min_zone_required = zone};
+    }
+    // Zones >=4: 
+    else
+    {
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_OXYGEN_CAPSULE,
+            .name = "Capsule d'oxygene (rare)",
+            .description = "Restaure 30 points d'oxygene - formulation rare",
+            .price = 30,
+            .stock = 5,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_HEALTH_KIT,
+            .name = "Kit medical (ameliore)",
+            .description = "Restaure 60 points de vie",
+            .price = 55,
+            .stock = 4,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_STIMULANT,
+            .name = "Stimulant (puissant)",
+            .description = "Reduit la fatigue et booste fortement",
+            .price = 70,
+            .stock = 3,
+            .min_zone_required = zone};
+        shops[zone][shop_counts[zone]++] = (ShopItem){
+            .type = ITEM_ANTIDOTE,
+            .name = "Antidote (concentre)",
+            .description = "Soigne le poison et la paralysie plus efficacement",
+            .price = 60,
+            .stock = 3,
+            .min_zone_required = zone};
+    }
 
-    // ITEM_STIMULANT
-    shop_items[*item_count] = (ShopItem){
-        .type = ITEM_STIMULANT,
-        .name = "Stimulant",
-        .description = "Reduit la fatigue et boost temporairement",
-        .price = 35,
-        .stock = -1,
-        .min_zone_required = 1};
-    (*item_count)++;
-
-    // ITEM_ANTIDOTE
-    shop_items[*item_count] = (ShopItem){
-        .type = ITEM_ANTIDOTE,
-        .name = "Antidote",
-        .description = "Soigne le poison et la paralysie",
-        .price = 30,
-        .stock = -1,
-        .min_zone_required = 1};
-    (*item_count)++;
+    shop_initialized[zone] = 1;
 }
 
 int is_shop_unlocked(Player *player, Map *map)
 {
-    (void)map;
-    (void)player;
+    if (player == NULL || map == NULL)
+        return 0;
 
-    // Option 1 : Toujours débloqué (recommandé pour la zone de départ)
-    // return 1;
+    int zone = player->current_zone;
+    if (zone <= 0)
+        return 1;
 
-    // Option 2 : Débloqué si au moins une zone est accessible
-    return (player->zones_unlocked >= 1);
+    for (int d = 0; d < 4; d++)
+    {
+        if (!map->zones[zone].destinations[d].cleared)
+            return 0;
+    }
+    return 1;
 }
 
 const char *get_item_rarity_color(int price)
@@ -75,16 +148,33 @@ const char *get_item_rarity_color(int price)
     return COLOR_MAGENTA;
 }
 
-void visit_shop(Player *player)
+void visit_shop(Player *player, Map *map)
 {
-    display_shop_menu(player);
+    if (!is_shop_unlocked(player, map))
+    {
+        clear_screen();
+        printf(COLOR_YELLOW "🔒 Le marché n'est pas accessible ici.\n" COLOR_RESET);
+        printf("Vous devez d'abord nettoyer toutes les destinations de cette zone pour ouvrir le marché.\n");
+        pause_screen();
+        return;
+    }
+
+    int zone = player->current_zone;
+    initialize_shop_items_for_zone(zone);
+    display_shop_menu(player, zone);
 }
 
-void display_shop_menu(Player *player)
+void display_shop_menu(Player *player, int zone)
 {
-    ShopItem shop_items[10];
-    int item_count = 0;
-    initialize_shop_items(shop_items, &item_count);
+    // use persistent per-zone shop
+    if (zone < 0 || zone >= MAX_ZONES)
+    {
+        print_error("Zone de boutique invalide.");
+        return;
+    }
+
+    ShopItem *shop_items = shops[zone];
+    int item_count = shop_counts[zone];
 
     while (1)
     {
@@ -92,7 +182,7 @@ void display_shop_menu(Player *player)
         display_marchand_ascii();
         printf(COLOR_CYAN COLOR_BOLD);
         printf("╔════════════════════════════════════════════════════════════════════════════════════╗\n");
-        printf("║                           🏪 MARCHE DU PLONGEUR 🏪                                 ║\n");
+        printf("║                           🏪 MARCHE DU PLONGEUR - ZONE %d 🏪                         ║\n", zone);
         printf("╚════════════════════════════════════════════════════════════════════════════════════╝\n");
         printf(COLOR_RESET);
 
@@ -116,73 +206,79 @@ void display_shop_menu(Player *player)
 
             const char *color = get_item_rarity_color(item->price);
 
-            printf("%s%d. %-25s" COLOR_RESET " | ", color, i + 1, item->name);
+            printf("%s%d. %-35s" COLOR_RESET " | ", color, i + 1, item->name);
             printf(COLOR_YELLOW "💰 %d perles" COLOR_RESET, item->price);
 
             if (item->stock > 0)
             {
-                printf(" | " COLOR_CYAN "Stock: %d" COLOR_RESET, item->stock);
+                printf(" | " COLOR_GREEN "Stock: %d" COLOR_RESET, item->stock);
             }
-            else if (item->stock == -1)
+            else
             {
-                printf(" | " COLOR_GREEN "♾️  Stock illimite" COLOR_RESET);
+                printf(" | " COLOR_RED "Rupture de stock" COLOR_RESET);
             }
 
-            printf("\n   └─ %s\n", item->description);
+            printf("\n");
         }
 
         print_separator('-', 90);
-        printf("\n" COLOR_GREEN "V." COLOR_RESET " 💸 Vendre des objets\n");
-        printf(COLOR_GREEN "0." COLOR_RESET " 🔙 Quitter le marche\n");
+        printf(COLOR_GREEN "0." COLOR_RESET " 🔙 Retour\n");
 
-        printf("\n" COLOR_BOLD "Que voulez-vous acheter ? (0 pour quitter): " COLOR_RESET);
+        printf("\n" COLOR_BOLD "Que voulez-vous faire ? (0 pour annuler): " COLOR_RESET);
 
         char choice = get_char_input();
 
         if (choice == '0')
         {
-            printf(COLOR_CYAN "\n👋 Merci de votre visite ! Revenez quand vous voulez.\n" COLOR_RESET);
-            pause_screen();
             return;
         }
-        else if (choice == 'v' || choice == 'V')
-        {
-            sell_items(player);
-        }
-        else if (choice >= '1' && choice <= '9')
-        {
-            int item_index = choice - '1';
 
-            if (item_index < item_count)
+        int item_index = choice - '1';
+
+        if (item_index >= 0 && item_index < item_count)
+        {
+            ShopItem *selected_item = &shop_items[item_index];
+
+            printf("\nVous avez choisi: " COLOR_CYAN "%s" COLOR_RESET "\n", selected_item->name);
+            printf("Description: %s\n", selected_item->description);
+            printf(COLOR_YELLOW "Prix: %d perles\n" COLOR_RESET, selected_item->price);
+
+            if (selected_item->stock > 0)
             {
-                ShopItem *selected_item = &shop_items[item_index];
+                printf(COLOR_GREEN "Stock disponible: %d\n" COLOR_RESET, selected_item->stock);
+            }
+            else
+            {
+                printf(COLOR_RED "Rupture de stock !\n" COLOR_RESET);
+            }
 
-                if (player->zones_unlocked < selected_item->min_zone_required)
-                {
-                    printf(COLOR_RED "\n⚠️  Cet article necessite d'avoir debloque la zone %d !\n" COLOR_RESET,
-                           selected_item->min_zone_required);
-                    pause_screen();
-                    continue;
-                }
+            printf("\n" COLOR_BOLD "Voulez-vous acheter cet article ? (o/n): " COLOR_RESET);
+            char confirm = get_char_input();
 
+            if (confirm == 'o' || confirm == 'O')
+            {
                 buy_item(player, selected_item);
             }
             else
             {
-                print_error("Article invalide !");
-                pause_screen();
+                printf(COLOR_YELLOW "Retour au menu principal du marché.\n" COLOR_RESET);
             }
         }
         else
         {
-            print_error("Choix invalide !");
-            pause_screen();
+            printf(COLOR_RED "Choix invalide. Veuillez reessayer.\n" COLOR_RESET);
         }
+
+        pause_screen();
     }
 }
 
+// Check whether player can buy the shop item (money, inventory space, stock)
 int can_buy_item(Player *player, ShopItem *item)
 {
+    if (player == NULL || item == NULL)
+        return 0;
+
     if (player->pearls < item->price)
     {
         printf(COLOR_RED "\n❌ Vous n'avez pas assez de perles !\n" COLOR_RESET);
@@ -207,10 +303,17 @@ int can_buy_item(Player *player, ShopItem *item)
     return 1;
 }
 
+// Add an item to player's inventory (uses ItemType values defined in types.h)
 int add_item_to_inventory(Player *player, ItemType type)
 {
+    if (player == NULL)
+        return 0;
+
+    if (player->inventory_count >= 4)
+        return 0;
 
     Item new_item;
+    memset(&new_item, 0, sizeof(new_item));
     new_item.type = type;
     new_item.quantity = 1;
 
@@ -258,8 +361,12 @@ int add_item_to_inventory(Player *player, ItemType type)
     return 1;
 }
 
+// Prompt and perform purchase; decrement shop stock (if limited) and persist per-zone inventory
 void buy_item(Player *player, ShopItem *item)
 {
+    if (player == NULL || item == NULL)
+        return;
+
     clear_screen();
 
     printf(COLOR_CYAN "═══════════════════════════════════════\n" COLOR_RESET);
@@ -309,8 +416,12 @@ void buy_item(Player *player, ShopItem *item)
     pause_screen();
 }
 
+// Sell items from player's inventory (unchanged logic, kept concise)
 void sell_items(Player *player)
 {
+    if (player == NULL)
+        return;
+
     if (player->inventory_count == 0)
     {
         printf(COLOR_YELLOW "\n📦 Votre inventaire est vide !\n" COLOR_RESET);
