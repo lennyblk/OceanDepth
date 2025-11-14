@@ -57,10 +57,12 @@ void manage_equipment(Player *player)
         switch (choice)
         {
         case '1':
+            // DIRECTLY open weapon selection (combined list: stored + inventory)
             equip_weapon_from_inventory(player);
             break;
 
         case '2':
+            // DIRECTLY open armor selection (combined list: stored + inventory)
             equip_armor_from_inventory(player);
             break;
 
@@ -89,151 +91,207 @@ void manage_equipment(Player *player)
     }
 }
 
+// Updated: show combined selectable list (stocked first if present, then inventory weapons)
 void equip_weapon_from_inventory(Player *player)
 {
     clear_screen();
-    printf(COLOR_CYAN COLOR_BOLD "⚔️ CHANGEMENT D'ARME\n" COLOR_RESET);
-    print_separator('=', 50);
+    printf(COLOR_CYAN COLOR_BOLD "⚔️ SELECTION D'ARME\n" COLOR_RESET);
+    print_separator('=', 60);
 
-    printf(COLOR_BOLD "Arme actuelle:" COLOR_RESET " %s (%d-%d dégâts)\n\n",
+    printf(COLOR_BOLD "Arme actuelle: " COLOR_RESET "%s (%d-%d)\n\n",
            player->equipped_weapon.name,
            player->equipped_weapon.attack_min,
            player->equipped_weapon.attack_max);
 
-    // Chercher les armes dans l'inventaire
-    int weapon_count = 0;
-    int weapon_indices[4];
+    // Build options: stored weapon (if any) then weapons from inventory
+    int option_count = 0;
+    int inv_weapon_indices[4]; // map option->inventory index
+    int has_stored = player->has_stored_weapon && player->stored_weapon.name[0];
 
-    printf(COLOR_BOLD "Armes disponibles dans l'inventaire:\n" COLOR_RESET);
-    for (int i = 0; i < player->inventory_count; i++)
+    if (has_stored)
+    {
+        option_count++;
+        printf(COLOR_GREEN "1." COLOR_RESET " %s (%d-%d)\n",
+               player->stored_weapon.name, player->stored_weapon.attack_min, player->stored_weapon.attack_max);
+    }
+
+    // List weapons in inventory
+    int printed = 0;
+    for (int i = 0; i < player->inventory_count; ++i)
     {
         if (player->inventory[i].type == ITEM_WEAPON)
         {
-            weapon_indices[weapon_count] = i;
-            weapon_count++;
-
-            Item *item = &player->inventory[i];
-            printf(COLOR_GREEN "%d." COLOR_RESET " %s (%d-%d dégâts)\n",
-                   weapon_count,
-                   item->weapon_data.name,
-                   item->weapon_data.attack_min,
-                   item->weapon_data.attack_max);
+            option_count++;
+            inv_weapon_indices[printed++] = i;
+            printf(COLOR_GREEN "%d." COLOR_RESET " %s (%d-%d)\n",
+                   option_count,
+                   player->inventory[i].weapon_data.name,
+                   player->inventory[i].weapon_data.attack_min,
+                   player->inventory[i].weapon_data.attack_max);
         }
     }
 
-    if (weapon_count == 0)
+    if (option_count == 0)
     {
-        printf(COLOR_YELLOW "Aucune arme disponible dans l'inventaire.\n" COLOR_RESET);
+        printf(COLOR_YELLOW "Aucune arme disponible (stockée ou inventaire).\n" COLOR_RESET);
         pause_screen();
         return;
     }
 
     printf(COLOR_GREEN "0." COLOR_RESET " 🔙 Annuler\n");
-    printf("\n" COLOR_BOLD "Quelle arme équiper ? " COLOR_RESET);
+    printf("\n" COLOR_BOLD "Choisissez l'arme à équiper: " COLOR_RESET);
 
-    char choice = get_char_input();
-
-    if (choice == '0')
+    char c = get_char_input();
+    int sel = c - '0';
+    if (c < '0' || c > '9')
+    {
+        print_error("Choix invalide !");
+        pause_screen();
         return;
-
-    int weapon_choice = choice - '1';
-    if (weapon_choice < 0 || weapon_choice >= weapon_count)
+    }
+    if (sel == 0)
+        return;
+    if (sel < 1 || sel > option_count)
     {
         print_error("Choix invalide !");
         pause_screen();
         return;
     }
 
-    // Équiper la nouvelle arme
-    int inventory_index = weapon_indices[weapon_choice];
-    Item *selected_weapon = &player->inventory[inventory_index];
+    // Determine selection: if has_stored and sel==1 -> stored, else compute inventory index
+    if (has_stored && sel == 1)
+    {
+        // swap equipped <-> stored
+        Weapon tmp = player->equipped_weapon;
+        player->equipped_weapon = player->stored_weapon;
+        player->stored_weapon = tmp;
+        player->has_stored_weapon = (player->stored_weapon.name[0] != '\0');
+        printf(COLOR_GREEN "\n✅ Arme équipée: %s\n" COLOR_RESET, player->equipped_weapon.name);
+        pause_screen();
+        return;
+    }
 
-    // Sauvegarder l'ancienne arme dans l'inventaire
+    // Otherwise it's an inventory selection. Compute which inventory weapon corresponds.
+    int inv_option_index = sel - (has_stored ? 2 : 1); // zero-based into printed array
+    if (inv_option_index < 0 || inv_option_index >= printed)
+    {
+        print_error("Choix invalide !");
+        pause_screen();
+        return;
+    }
+
+    int inv_idx = inv_weapon_indices[inv_option_index];
+
+    // swap: place old equipped into that inventory slot, equip selected weapon
     Item old_weapon;
+    memset(&old_weapon, 0, sizeof(old_weapon));
     old_weapon.type = ITEM_WEAPON;
-    strcpy(old_weapon.name, player->equipped_weapon.name);
     old_weapon.quantity = 1;
     old_weapon.weapon_data = player->equipped_weapon;
+    strncpy(old_weapon.name, player->equipped_weapon.name, sizeof(old_weapon.name)-1);
 
-    // Équiper la nouvelle arme
-    player->equipped_weapon = selected_weapon->weapon_data;
+    player->equipped_weapon = player->inventory[inv_idx].weapon_data;
 
-    // Remplacer l'arme dans l'inventaire par l'ancienne
-    player->inventory[inventory_index] = old_weapon;
+    // replace inventory slot with old weapon
+    player->inventory[inv_idx] = old_weapon;
 
     printf(COLOR_GREEN "\n✅ Arme équipée: %s\n" COLOR_RESET, player->equipped_weapon.name);
     pause_screen();
 }
 
+// Updated: similar logic for armors (stocked + inventory)
 void equip_armor_from_inventory(Player *player)
 {
     clear_screen();
-    printf(COLOR_CYAN COLOR_BOLD "🛡️ CHANGEMENT D'ARMURE\n" COLOR_RESET);
-    print_separator('=', 50);
+    printf(COLOR_CYAN COLOR_BOLD "🛡️ SELECTION D'ARMURE\n" COLOR_RESET);
+    print_separator('=', 60);
 
-    printf(COLOR_BOLD "Armure actuelle:" COLOR_RESET " %s (+%d défense)\n\n",
+    printf(COLOR_BOLD "Armure actuelle: " COLOR_RESET "%s (+%d)\n\n",
            player->equipped_armor.name,
            player->equipped_armor.defense);
 
-    // Chercher les armures dans l'inventaire
-    int armor_count = 0;
-    int armor_indices[4];
+    int option_count = 0;
+    int inv_armor_indices[4];
+    int printed = 0;
+    int has_stored = player->has_stored_armor && player->stored_armor.name[0];
 
-    printf(COLOR_BOLD "Armures disponibles dans l'inventaire:\n" COLOR_RESET);
-    for (int i = 0; i < player->inventory_count; i++)
+    if (has_stored)
+    {
+        option_count++;
+        printf(COLOR_GREEN "1." COLOR_RESET " %s (+%d)\n",
+               player->stored_armor.name, player->stored_armor.defense);
+    }
+
+    for (int i = 0; i < player->inventory_count; ++i)
     {
         if (player->inventory[i].type == ITEM_ARMOR)
         {
-            armor_indices[armor_count] = i;
-            armor_count++;
-
-            Item *item = &player->inventory[i];
-            printf(COLOR_GREEN "%d." COLOR_RESET " %s (+%d défense)\n",
-                   armor_count,
-                   item->armor_data.name,
-                   item->armor_data.defense);
+            option_count++;
+            inv_armor_indices[printed++] = i;
+            printf(COLOR_GREEN "%d." COLOR_RESET " %s (+%d)\n",
+                   option_count,
+                   player->inventory[i].armor_data.name,
+                   player->inventory[i].armor_data.defense);
         }
     }
 
-    if (armor_count == 0)
+    if (option_count == 0)
     {
-        printf(COLOR_YELLOW "Aucune armure disponible dans l'inventaire.\n" COLOR_RESET);
+        printf(COLOR_YELLOW "Aucune armure disponible (stockée ou inventaire).\n" COLOR_RESET);
         pause_screen();
         return;
     }
 
     printf(COLOR_GREEN "0." COLOR_RESET " 🔙 Annuler\n");
-    printf("\n" COLOR_BOLD "Quelle armure équiper ? " COLOR_RESET);
+    printf("\n" COLOR_BOLD "Choisissez l'armure à équiper: " COLOR_RESET);
 
-    char choice = get_char_input();
-
-    if (choice == '0')
+    char c = get_char_input();
+    int sel = c - '0';
+    if (c < '0' || c > '9')
+    {
+        print_error("Choix invalide !");
+        pause_screen();
         return;
-
-    int armor_choice = choice - '1';
-    if (armor_choice < 0 || armor_choice >= armor_count)
+    }
+    if (sel == 0)
+        return;
+    if (sel < 1 || sel > option_count)
     {
         print_error("Choix invalide !");
         pause_screen();
         return;
     }
 
-    // Équiper la nouvelle armure
-    int inventory_index = armor_indices[armor_choice];
-    Item *selected_armor = &player->inventory[inventory_index];
+    if (has_stored && sel == 1)
+    {
+        Armor tmp = player->equipped_armor;
+        player->equipped_armor = player->stored_armor;
+        player->stored_armor = tmp;
+        player->has_stored_armor = (player->stored_armor.name[0] != '\0');
+        printf(COLOR_GREEN "\n✅ Armure équipée: %s\n" COLOR_RESET, player->equipped_armor.name);
+        pause_screen();
+        return;
+    }
 
-    // Sauvegarder l'ancienne armure dans l'inventaire
+    int inv_option_index = sel - (has_stored ? 2 : 1);
+    if (inv_option_index < 0 || inv_option_index >= printed)
+    {
+        print_error("Choix invalide !");
+        pause_screen();
+        return;
+    }
+
+    int inv_idx = inv_armor_indices[inv_option_index];
+
     Item old_armor;
+    memset(&old_armor, 0, sizeof(old_armor));
     old_armor.type = ITEM_ARMOR;
-    strcpy(old_armor.name, player->equipped_armor.name);
     old_armor.quantity = 1;
     old_armor.armor_data = player->equipped_armor;
+    strncpy(old_armor.name, player->equipped_armor.name, sizeof(old_armor.name)-1);
 
-    // Équiper la nouvelle armure
-    player->equipped_armor = selected_armor->armor_data;
-
-    // Remplacer l'armure dans l'inventaire par l'ancienne
-    player->inventory[inventory_index] = old_armor;
+    player->equipped_armor = player->inventory[inv_idx].armor_data;
+    player->inventory[inv_idx] = old_armor;
 
     printf(COLOR_GREEN "\n✅ Armure équipée: %s\n" COLOR_RESET, player->equipped_armor.name);
     pause_screen();

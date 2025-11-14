@@ -16,6 +16,10 @@ typedef struct {
     int oxygen_restore_override;
     int fatigue_reduce_override;
     int removes_effect_override;
+
+    // Si l'article est une arme ou armure vendue en boutique, préciser le sous-type
+    WeaponType weapon_type;
+    ArmorType armor_type;
 } ShopItem;
 
 void visit_shop(Player *player, Map *map);

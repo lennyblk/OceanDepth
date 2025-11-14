@@ -50,12 +50,14 @@ static void display_map_row(Player *player, Map *map, int zone, const char *dest
     printf("\n");
 
     printf("│");
+    // clamp zone index to 0..3 pour noms (toutes les zones >=4 utilisent la même ligne de noms que la zone 3)
+    int display_zone = (zone < 4) ? zone : 3;
     for (int col = 0; col < 4; col++)
     {
         if (is_destination_cleared(map, zone, col))
-            printf(COLOR_GREEN " ✓ %s " COLOR_RESET, destinations[zone][col]);
+            printf(COLOR_GREEN " ✓ %s " COLOR_RESET, destinations[display_zone][col]);
         else if (is_zone_unlocked(player, zone))
-            printf(" %s ", destinations[zone][col]);
+            printf(" %s ", destinations[display_zone][col]);
         else
             printf(COLOR_BOLD " 🔒 Vide " COLOR_RESET);
         printf("│");
@@ -292,7 +294,7 @@ void display_zone_map(Player *player, Map *map)
         {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}
     };
 
-    const char *abyss_destinations[4] = {"💀 Danger", "💀 Danger", "💀 Danger", "💀 Danger"};
+    const char *abyss_destinations[4] = {"💀 Abysse Profond", "💀 Abysse Profond", "💀 Abysse Profond", "💀 Abysse Profond"};
 
     display_map_header();
 
@@ -334,35 +336,40 @@ void select_destination(Player *player, Map *map)
 {
     clear_screen();
 
+    // determine which template row to use for names (clamp any deep zone to index 3)
+    int name_zone = (player->current_zone < 4) ? player->current_zone : 3;
+
+    // Destinations dynamiques basées sur name_zone
     const char *destinations[4];
 
-    if (player->current_zone == 0)
+    if (name_zone == 0)
     {
         destinations[0] = "🚤 Base";
         destinations[1] = "🌊 Océan";
         destinations[2] = "🌊 Océan";
         destinations[3] = "🚤 Bateau";
     }
-    else if (player->current_zone == 1)
+    else if (name_zone == 1)
     {
         destinations[0] = "🪸 Récif";
         destinations[1] = "💰 Épave";
         destinations[2] = "🌿 Algues";
         destinations[3] = "🕳️ Grotte";
     }
-    else if (player->current_zone == 2)
+    else if (name_zone == 2)
     {
         destinations[0] = "🦈 Territoire du Requin";
         destinations[1] = "🌊 Zone Profonde";
         destinations[2] = "🦑 Repaire du Kraken";
         destinations[3] = "🪸 Récif Sombre";
     }
-    else
+    else // name_zone == 3 (ou plus)
     {
-        destinations[0] = "💀 Abysses Profonds";
-        destinations[1] = "💀 Abysses Profonds";
-        destinations[2] = "💀 Abysses Profonds";
-        destinations[3] = "💀 Abysses Profonds";
+        // Utiliser les mêmes intitulés que la "zone 4" (template index 3)
+        destinations[0] = "❓ Abysse";
+        destinations[1] = "❓ Abysse";
+        destinations[2] = "❓ Abysse";
+        destinations[3] = "❓ Abysse";
     }
 
     printf(COLOR_CYAN COLOR_BOLD "🎯 SÉLECTION DE DESTINATION - ZONE %d\n" COLOR_RESET, player->current_zone);
@@ -422,11 +429,9 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
         {"Abysses", "Abysses", "Abysses", "Abysses"}
     };
 
-    const char *dest_name;
-    if (zone >= 0 && zone < 4)
-        dest_name = dest_names[zone][destination];
-    else
-        dest_name = "Abysses Profonds";
+    // clamp pour récupérer le nom d'affichage (toutes les zones >=4 reprennent la ligne index 3)
+    int name_zone = (zone < 4) ? zone : 3;
+    const char *dest_name = dest_names[name_zone][destination];
 
     printf(COLOR_CYAN COLOR_BOLD "🏊 EXPLORATION: %s\n" COLOR_RESET, dest_name);
     print_separator('=', 60);

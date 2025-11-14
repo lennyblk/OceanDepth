@@ -190,6 +190,12 @@ typedef struct
     int paralysis_turns_left;
     int poison_turns_left;
     int attacks_reduced_next_turn;
+
+    // Stored (purchased but not yet equipped) gear
+    Weapon stored_weapon;
+    Armor stored_armor;
+    int has_stored_weapon;
+    int has_stored_armor;
 } Player;
 
 // STRUCTURE ZONE =======================================================================================================
