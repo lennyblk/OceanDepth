@@ -288,8 +288,9 @@ void display_zone_map(Player *player, Map *map)
     const char *base_destinations[4][4] = {
         {"🚤 Base", "🌊 Océan", "🌊 Océan", "🚤 Bateau"},
         {"🪸 Récif", "💰 Épave", "🌿 Algues", "🕳️ Grotte"},
-        {"🦈 Requin", "❌ Vide", "🦑 Kraken", "❌ Vide"},
-        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}};
+        {"🦈 Requin", "🌊 Zone Profonde", "🦑 Repaire", "🪸 Récif Sombre"},
+        {"❓ Abysse", "❓ Abysse", "❓ Abysse", "❓ Abysse"}
+    };
 
     const char *abyss_destinations[4] = {"💀 Danger", "💀 Danger", "💀 Danger", "💀 Danger"};
 
@@ -333,7 +334,6 @@ void select_destination(Player *player, Map *map)
 {
     clear_screen();
 
-    // Destinations dynamiques
     const char *destinations[4];
 
     if (player->current_zone == 0)
@@ -352,14 +352,13 @@ void select_destination(Player *player, Map *map)
     }
     else if (player->current_zone == 2)
     {
-        destinations[0] = "??";
-        destinations[1] = "🌿 Algues";
-        destinations[2] = "??";
-        destinations[3] = "🪸 Récif";
+        destinations[0] = "🦈 Territoire du Requin";
+        destinations[1] = "🌊 Zone Profonde";
+        destinations[2] = "🦑 Repaire du Kraken";
+        destinations[3] = "🪸 Récif Sombre";
     }
     else
     {
-        // Zones 3+ : toutes des destinations dangereuses
         destinations[0] = "💀 Abysses Profonds";
         destinations[1] = "💀 Abysses Profonds";
         destinations[2] = "💀 Abysses Profonds";
@@ -419,10 +418,10 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
     const char *dest_names[4][4] = {
         {"Base de plongée", "Océan libre", "Océan libre", "Bateau marchand"},
         {"Récif corallien", "Épave du galion", "Forêt d'algues", "Grotte sous-marine"},
-        {"Territoire du requin", "Zone vide", "Repaire du Kraken", "Zone vide"},
-        {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}};
+        {"Territoire du requin", "Zone profonde", "Repaire du Kraken", "Récif sombre"},
+        {"Abysses", "Abysses", "Abysses", "Abysses"}
+    };
 
-    // Gérer les zones 4+ avec des noms par défaut
     const char *dest_name;
     if (zone >= 0 && zone < 4)
         dest_name = dest_names[zone][destination];
@@ -471,12 +470,8 @@ int is_zone_unlocked(const Player *player, int zone)
 
 int is_destination_available(const Player *player, Map *map, int zone, int destination)
 {
-    (void)map; // Supprime l'avertissement de paramètre non utilisé
-    // Zone 2 a des destinations vides
-    if (zone == 2 && (destination == 1 || destination == 3))
-    {
-        return false;
-    }
+    (void)map;
+    (void)destination;  
     return is_zone_unlocked((Player *)player, zone);
 }
 
@@ -622,7 +617,6 @@ void display_journal(Player *player)
     printf(COLOR_GREEN "Bonne chance, chasseur des profondeurs ! 🌊\n\n" COLOR_RESET);
 
     pause_screen();
-    // return 1; // Victoire
 }
 
 void create_creatures_for_zone(Creature creatures[], int creature_count, int zone)

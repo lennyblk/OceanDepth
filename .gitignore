@@ -4,3 +4,4 @@ oceandepths
 oceandepths.exe
 .vscode/
 *.exe
+Makefile

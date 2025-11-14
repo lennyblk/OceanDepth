@@ -76,7 +76,6 @@ void player_init(Player *player)
     player->current_zone = SURFACE_DEPTH;
     strcpy(player->name, "Monster Slayer");
     player->zones_unlocked = 1;
-    player->fatigue = 0;
     player->inventory_count = 0;
 
     strcpy(player->equipped_weapon.name, "Harpon Rouillé");
@@ -97,7 +96,7 @@ void player_init(Player *player)
     player->paralysis_turns_left = 0;
     player->poison_turns_left = 0;
 
-    player->attacks_reduced_next_turn = 0; // AJOUTÉ
+    player->attacks_reduced_next_turn = 0;
 
     player_init_skills(player);
 

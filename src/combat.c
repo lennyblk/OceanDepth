@@ -181,7 +181,6 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
     assert(creatures != NULL);
     assert(creature_count > 0);
 
-    int turn = 1;
     int combat_result = 0;
     player->fatigue = 0;
 
@@ -225,7 +224,6 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
         }
 
         player_update_cooldowns(player);
-        turn++;
         pause_screen();
     }
     return combat_result;
@@ -291,27 +289,17 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
     assert(player != NULL);
     assert(creatures != NULL);
 
-    int attacks_left;
-    if (player->fatigue <= 1)
-    {
-        attacks_left = 3;
-    }
-    else if (player->fatigue <= 3)
-    {
-        attacks_left = 2;
-    }
-    else
-    {
-        attacks_left = 1;
-    }
+    // Le joueur a autant d'actions que d'ennemis vivants
+    int attacks_left = count_alive_creatures(creatures, creature_count);
 
+    // Application de la réduction due à la paralysie
     if (player->attacks_reduced_next_turn > 0)
     {
         printf(COLOR_YELLOW "À cause de la piqûre, vous perdez %d action(s) ce tour !\n" COLOR_RESET, player->attacks_reduced_next_turn);
         attacks_left -= player->attacks_reduced_next_turn;
         player->attacks_reduced_next_turn = 0;
-        if (attacks_left < 0)
-            attacks_left = 0;
+        if (attacks_left < 1)
+            attacks_left = 1;  // Garder au moins 1 action
     }
 
     while (attacks_left > 0)
@@ -332,8 +320,6 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
                 attack_creature(player, target);
                 attacks_left--;
                 player_use_oxygen(player, player->equipped_weapon.oxygen_cost_per_attack);
-                if (player->fatigue < 5)
-                    player->fatigue++;
             }
             break;
         }
@@ -341,8 +327,6 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
             if (handle_skill_choice(player, creatures, creature_count) == 1)
             {
                 attacks_left--;
-                if (player->fatigue < 5)
-                    player->fatigue++;
             }
             pause_screen();
             break;
@@ -350,8 +334,6 @@ int player_turn(Player *player, Creature creatures[], int creature_count)
             if (use_inventory_item(player) == 1)
             {
                 attacks_left--;
-                if (player->fatigue < 5)
-                    player->fatigue++;
             }
             break;
         case '4':
