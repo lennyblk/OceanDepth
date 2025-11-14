@@ -150,13 +150,13 @@ int display_main_menu(Player *player)
 
     print_separator('-', 100);
 
-    printf(COLOR_BOLD "╔══════════════════════════════════════ MENU PRINCIPAL ══════════════════════════════════════╗\n" COLOR_RESET);
+    printf(COLOR_BOLD "╔══════════════════════════════════════ MENU PRINCIPAL ═══════════════════════════════════════╗\n" COLOR_RESET);
     printf("║                                                                                             ║\n");
-    printf("║  " COLOR_GREEN "1." COLOR_RESET " 🗺️  Explorer la carte                    " COLOR_GREEN "6." COLOR_RESET " 🎒 Gérer l'inventaire                         ║\n");
-    printf("║  " COLOR_GREEN "2." COLOR_RESET " 📊 Voir les statistiques                 " COLOR_GREEN "7." COLOR_RESET " 🛡️  Équipement et armes                       ║\n");
-    printf("║  " COLOR_GREEN "3." COLOR_RESET " 🏪 Visiter le marché                     " COLOR_GREEN "8." COLOR_RESET " 💾 Sauvegarder la partie                      ║\n");
-    printf("║  " COLOR_GREEN "4." COLOR_RESET " 🌊 Se reposer en surface                 " COLOR_GREEN "9." COLOR_RESET " 📖 Consulter le journal                       ║\n");
-    printf("║  " COLOR_GREEN "5." COLOR_RESET " ???                                      " COLOR_GREEN "0." COLOR_RESET " ❌ Quitter le jeu                             ║\n");
+    printf("║  " COLOR_GREEN "1." COLOR_RESET " 🗺️  Explorer la carte                    " COLOR_GREEN "6." COLOR_RESET " 🎒 Gérer l'inventaire                       ║\n");
+    printf("║  " COLOR_GREEN "2." COLOR_RESET " 📊 Voir les statistiques                 " COLOR_GREEN "7." COLOR_RESET " 🛡️  Équipement et armes                     ║\n");
+    printf("║  " COLOR_GREEN "3." COLOR_RESET " 🏪 Visiter le marché                     " COLOR_GREEN "8." COLOR_RESET " 💾 Sauvegarder la partie                    ║\n");
+    printf("║  " COLOR_GREEN "4." COLOR_RESET " 🌊 Se reposer en surface                 " COLOR_GREEN "9." COLOR_RESET " 📖 Consulter le journal                     ║\n");
+    printf("║  " COLOR_GREEN "5." COLOR_RESET " ???                                      " COLOR_GREEN "0." COLOR_RESET " ❌ Quitter le jeu                           ║\n");
     printf("║                                                                                             ║\n");
     printf("╚═════════════════════════════════════════════════════════════════════════════════════════════╝\n");
 

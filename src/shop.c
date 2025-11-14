@@ -7,9 +7,11 @@
 #include "../include/menu.h"
 #include "../include/ascii_art.h"
 
-// prototypes fournis par les nouveaux fichiers weapon.c / armor.c
+// prototypes fournis par les nouveaux fichiers weapon.c / armor.c / item.c
 extern Weapon get_weapon_stats(WeaponType type);
 extern Armor get_armor_stats(ArmorType type);
+extern Item get_item_default_stats(ItemType type);
+extern Item get_item_enhanced_stats(ItemType type);
 
 static ShopItem shops[MAX_ZONES][10];
 static int shop_counts[MAX_ZONES];
@@ -45,7 +47,7 @@ void initialize_shop_items_for_zone(int zone)
             .name = "Capsule d'oxygene",
             .description = "Restaure 30 points d'oxygene instantanement",
             .price = 10,
-            .stock = -1,
+            .stock = 10,
             .min_zone_required = 0,
             .hp_restore_override = 0,
             .oxygen_restore_override = 0,
@@ -56,7 +58,7 @@ void initialize_shop_items_for_zone(int zone)
             .name = "Kit medical",
             .description = "Restaure 40 points de vie",
             .price = 20,
-            .stock = -1,
+            .stock = 10,
             .min_zone_required = 0,
             .hp_restore_override = 0,
             .oxygen_restore_override = 0,
@@ -522,62 +524,43 @@ int add_item_to_inventory(Player *player, ShopItem *shop_item)
 
     Item new_item;
     memset(&new_item, 0, sizeof(new_item));
-    new_item.type = shop_item->type;
-    new_item.quantity = 1;
 
     if (shop_item->type == ITEM_WEAPON)
     {
         Weapon w = get_weapon_stats(shop_item->weapon_type);
         snprintf(new_item.name, sizeof(new_item.name), "%s", w.name);
+        new_item.type = ITEM_WEAPON;
+        new_item.quantity = 1;
         new_item.weapon_data = w;
-        // default consumable fields unused
     }
     else if (shop_item->type == ITEM_ARMOR)
     {
         Armor a = get_armor_stats(shop_item->armor_type);
         snprintf(new_item.name, sizeof(new_item.name), "%s", a.name);
+        new_item.type = ITEM_ARMOR;
+        new_item.quantity = 1;
         new_item.armor_data = a;
     }
     else
     {
-        // Use overrides when fournis (non-zero), sinon valeurs par défaut
-        switch (shop_item->type)
-        {
-        case ITEM_OXYGEN_CAPSULE:
-            strcpy(new_item.name, shop_item->name[0] ? shop_item->name : "Capsule d'oxygene");
-            new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 30;
-            new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 0;
-            new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
+        // Récupérer les valeurs par défaut depuis item.c
+        new_item = get_item_default_stats(shop_item->type);
+        
+        // Appliquer les overrides si présents
+        if (shop_item->name[0])
+            strcpy(new_item.name, shop_item->name);
+        
+        if (shop_item->hp_restore_override > 0)
+            new_item.hp_restore = shop_item->hp_restore_override;
+        
+        if (shop_item->oxygen_restore_override > 0)
+            new_item.oxygen_restore = shop_item->oxygen_restore_override;
+        
+        if (shop_item->fatigue_reduce_override > 0)
+            new_item.fatigue_reduce = shop_item->fatigue_reduce_override;
+        
+        if (shop_item->removes_effect_override > 0)
             new_item.removes_effect = shop_item->removes_effect_override;
-            break;
-
-        case ITEM_HEALTH_KIT:
-            strcpy(new_item.name, shop_item->name[0] ? shop_item->name : "Kit medical");
-            new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 40;
-            new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 0;
-            new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
-            new_item.removes_effect = shop_item->removes_effect_override;
-            break;
-
-        case ITEM_STIMULANT:
-            strcpy(new_item.name, shop_item->name[0] ? shop_item->name : "Stimulant");
-            new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 20;
-            new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 10;
-            new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 0;
-            new_item.removes_effect = shop_item->removes_effect_override;
-            break;
-
-        case ITEM_ANTIDOTE:
-            strcpy(new_item.name, shop_item->name[0] ? shop_item->name : "Antidote");
-            new_item.removes_effect = (shop_item->removes_effect_override > 0) ? shop_item->removes_effect_override : 1;
-            new_item.hp_restore = (shop_item->hp_restore_override > 0) ? shop_item->hp_restore_override : 10;
-            new_item.oxygen_restore = (shop_item->oxygen_restore_override > 0) ? shop_item->oxygen_restore_override : 0;
-            new_item.fatigue_reduce = (shop_item->fatigue_reduce_override > 0) ? shop_item->fatigue_reduce_override : 0;
-            break;
-
-        default:
-            return 0;
-        }
     }
 
     player->inventory[player->inventory_count] = new_item;

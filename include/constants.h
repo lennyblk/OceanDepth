@@ -14,7 +14,7 @@
 #define STARTING_LEVEL 1
 
 // Limites du monde
-#define MAX_ZONES 10
+#define MAX_ZONES 100
 #define MAX_CREATURES_PER_ZONE 5
 #define MAX_INVENTORY_SIZE 20
 
