@@ -422,7 +422,14 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
         {"Territoire du requin", "Zone vide", "Repaire du Kraken", "Zone vide"},
         {"Zone inconnue", "Zone inconnue", "Zone inconnue", "Zone inconnue"}};
 
-    printf(COLOR_CYAN COLOR_BOLD "🏊 EXPLORATION: %s\n" COLOR_RESET, dest_names[zone][destination]);
+    // Gérer les zones 4+ avec des noms par défaut
+    const char *dest_name;
+    if (zone >= 0 && zone < 4)
+        dest_name = dest_names[zone][destination];
+    else
+        dest_name = "Abysses Profonds";
+
+    printf(COLOR_CYAN COLOR_BOLD "🏊 EXPLORATION: %s\n" COLOR_RESET, dest_name);
     print_separator('=', 60);
 
     if (is_destination_cleared(map, zone, destination))
@@ -446,7 +453,6 @@ void enter_destination(Player *player, Map *map, int zone, int destination)
     pause_screen();
 }
 
-// Fonctions utilitaires pour le système de zones
 
 int get_zone_depth(int zone)
 {
