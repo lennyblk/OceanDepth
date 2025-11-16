@@ -136,10 +136,6 @@ void player_display_stats(const Player *player)
     print_progress_bar(player->oxygen, player->max_oxygen, 20);
     printf("\n");
 
-    printf("\n" COLOR_BOLD "POSITION:" COLOR_RESET "\n");
-    printf("Coordonnées: (%d, %d)\n", player->x, player->y);
-    printf("Zone: %d\n", player->current_zone);
-
     print_separator('-', 50);
 }
 
