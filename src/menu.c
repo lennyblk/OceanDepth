@@ -592,7 +592,7 @@ void rest_at_surface(Player *player)
     printf(COLOR_YELLOW "🔱 Perles: %d" COLOR_RESET "\n", player->pearls);
     printf(COLOR_BOLD "📊 Repos utilisés: %d fois\n" COLOR_RESET "\n", player->rest_count);
     
-    // Vérifications
+    // Vérification des perles
     if (player->pearls < rest_cost)
     {
         printf(COLOR_RED "❌ Vous n'avez pas assez de perles pour vous reposer !\n" COLOR_RESET);
@@ -601,7 +601,10 @@ void rest_at_surface(Player *player)
         return;
     }
     
-    if (player->hp == player->max_hp && player->oxygen == player->max_oxygen)
+    int hp_missing = player->max_hp - player->hp;
+    int oxygen_missing = player->max_oxygen - player->oxygen;
+    
+    if (hp_missing <= 0 && oxygen_missing <= 0)
     {
         printf(COLOR_GREEN "✓ Vous êtes déjà en pleine forme !\n" COLOR_RESET);
         pause_screen();
@@ -620,9 +623,6 @@ void rest_at_surface(Player *player)
     // Appliquer le repos
     player->pearls -= rest_cost;
     player->rest_count++;
-    
-    int hp_missing = player->max_hp - player->hp;
-    int oxygen_missing = player->max_oxygen - player->oxygen;
     
     int hp_restored = (hp_missing / 2) + 20;
     int oxygen_restored = (oxygen_missing / 2) + 30;

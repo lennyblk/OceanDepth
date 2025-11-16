@@ -254,8 +254,6 @@ void display_combat_status(const Player *player, const Creature creatures[], int
     display_oxygen_bar(player->oxygen, player->max_oxygen, 30);
     printf(" %d/%d\n", player->oxygen, player->max_oxygen);
 
-    printf("| " COLOR_BOLD "Fatigue: " COLOR_RESET "[%d/5]\n", player->fatigue);
-
     if (player->is_paralyzed)
     {
         printf("| " COLOR_YELLOW "* PARALYSE (%d tour)" COLOR_RESET "\n", player->paralysis_turns_left);

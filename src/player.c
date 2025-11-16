@@ -65,8 +65,8 @@ void player_init(Player *player)
         return;
     }
 
-    player->hp = 120;
-    player->max_hp = 120;
+    player->hp = 200;
+    player->max_hp = 200;
     player->oxygen = 120;
     player->max_oxygen = 120;
     player->pearls = STARTING_PEARLS;
