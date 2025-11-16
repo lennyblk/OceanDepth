@@ -42,7 +42,7 @@ static void display_map_row(Player *player, Map *map, int zone, const char *dest
         snprintf(zone_depth, sizeof(zone_depth), "-%dm", zone * 50);
     }
 
-    printf("┌─────────┬─────────┬─────────┬─────────┐ ");
+    printf("┌──────────────────────────────────────────────────────────────────────────────────────┐ ");
     if (zone == player->current_zone)
         printf(COLOR_YELLOW "← VOUS ÊTES ICI" COLOR_RESET);
     else if (!is_zone_unlocked(player, zone))
@@ -50,20 +50,54 @@ static void display_map_row(Player *player, Map *map, int zone, const char *dest
     printf("\n");
 
     printf("│");
-    // clamp zone index to 0..3 pour noms (toutes les zones >=4 utilisent la même ligne de noms que la zone 3)
     int display_zone = (zone < 4) ? zone : 3;
     for (int col = 0; col < 4; col++)
     {
+        const char *text;
+        const char *color_start = "";
+        const char *color_end = "";
+        
         if (is_destination_cleared(map, zone, col))
-            printf(COLOR_GREEN " ✓ %s " COLOR_RESET, destinations[display_zone][col]);
+        {
+            text = destinations[display_zone][col];
+            color_start = COLOR_GREEN " ✓ ";
+            color_end = COLOR_RESET;
+        }
         else if (is_zone_unlocked(player, zone))
-            printf(" %s ", destinations[display_zone][col]);
+        {
+            text = destinations[display_zone][col];
+        }
         else
-            printf(COLOR_BOLD " 🔒 Vide " COLOR_RESET);
-        printf("│");
+        {
+            text = "🔒 Vide";
+            color_start = COLOR_BOLD;
+            color_end = COLOR_RESET;
+        }
+        
+        // Calculer la longueur visible (sans emojis/codes couleur)
+        int text_len = 0;
+        for (const char *p = text; *p; p++)
+        {
+            // Compter seulement les caractères ASCII simples (pas les emojis UTF-8)
+            if ((*p & 0xC0) != 0x80)  // Ignore les bytes de continuation UTF-8
+                text_len++;
+        }
+        
+        // Ajuster pour les emojis (ils comptent souvent pour 2 mais prennent + de place visuellement)
+        if (strstr(text, "🚤") || strstr(text, "🌊") || strstr(text, "🪸") || 
+            strstr(text, "💰") || strstr(text, "🌿") || strstr(text, "🕳️") ||
+            strstr(text, "🦈") || strstr(text, "🦑") || strstr(text, "❓") ||
+            strstr(text, "💀") || strstr(text, "🔒"))
+            text_len -= 1;  
+        
+        int padding = 19 - text_len; 
+        int left_pad = padding / 2;
+        int right_pad = padding - left_pad;
+        
+        printf("%s%*s%s%*s%s│", color_start, left_pad, "", text, right_pad, "", color_end);
     }
     printf(" %s | %s\n", zone_name, zone_depth);
-    printf("└─────────┴─────────┴─────────┴─────────┘\n");
+    printf("└──────────────────────────────────────────────────────────────────────────────────────┘\n");
 }
 
 static void display_map_legend(void)
@@ -219,7 +253,7 @@ void explore_map(Player *player, Map *map, int *game_time)
     clear_screen();
 
     printf("╔══════════════════════════════════════ CARTOGRAPHIE OCÉANIQUE ══════════════════════════════════════╗\n");
-    printf("║                                    Position actuelle: Zone %d (%dm)                                  ║\n",
+    printf("║                                    Position actuelle: Zone %d (%dm)                                 ║\n",
            player->current_zone, get_zone_depth(player->current_zone));
     printf("╚════════════════════════════════════════════════════════════════════════════════════════════════════╝\n\n");
 
@@ -538,9 +572,9 @@ void unlock_next_zone(Player *player, Map *map, int current_zone)
 void rest_at_surface(Player *player)
 {
     printf("Vous vous reposez en surface...\n");
-    player->hp = player->max_hp;
-    player->oxygen = player->max_oxygen;
-    printf(COLOR_GREEN "❤ HP et 💨 Oxygène restaurés !\n" COLOR_RESET);
+    player->hp = player->hp + player->max_hp / 2;
+    player->oxygen = player->oxygen + player->max_oxygen / 2;
+    printf(COLOR_GREEN "Vous êtes reposé\n" COLOR_RESET);
     pause_screen();
 }
 
