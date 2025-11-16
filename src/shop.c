@@ -6,12 +6,9 @@
 #include "../include/constants.h"
 #include "../include/menu.h"
 #include "../include/ascii_art.h"
-
-// prototypes fournis par les nouveaux fichiers weapon.c / armor.c / item.c
-extern Weapon get_weapon_stats(WeaponType type);
-extern Armor get_armor_stats(ArmorType type);
-extern Item get_item_default_stats(ItemType type);
-extern Item get_item_enhanced_stats(ItemType type);
+#include "../include/weapon.h"
+#include "../include/armor.h"
+#include "../include/item.h"
 
 static ShopItem shops[MAX_ZONES][10];
 static int shop_counts[MAX_ZONES];

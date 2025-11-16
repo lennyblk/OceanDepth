@@ -486,6 +486,7 @@ Creature *select_target(Creature creatures[], int creature_count)
     if (alive_creatures == 0)
         return NULL;
 
+    // Si une seule créature vivante, la retourner directement
     if (alive_creatures == 1)
     {
         for (int i = 0; i < creature_count; i++)
@@ -497,13 +498,23 @@ Creature *select_target(Creature creatures[], int creature_count)
 
     while (1)
     {
-        printf("Choisissez une cible (1-%d) : ", creature_count);
-        int target_choice = get_int_input(1, creature_count);
+        printf("Choisissez une cible (1-%d) : ", alive_creatures);
+        int target_choice = get_int_input(1, alive_creatures);
 
-        if (target_choice > 0 && target_choice <= creature_count && creatures[target_choice - 1].is_alive)
+        // Trouver la Nième créature vivante
+        int alive_index = 0;
+        for (int i = 0; i < creature_count; i++)
         {
-            return &creatures[target_choice - 1];
+            if (creatures[i].is_alive)
+            {
+                alive_index++;
+                if (alive_index == target_choice)
+                {
+                    return &creatures[i];
+                }
+            }
         }
+        
         print_error("Cible invalide.");
     }
 }

@@ -572,8 +572,12 @@ void unlock_next_zone(Player *player, Map *map, int current_zone)
 void rest_at_surface(Player *player)
 {
     printf("Vous vous reposez en surface...\n");
-    player->hp = player->hp + player->max_hp / 2;
-    player->oxygen = player->oxygen + player->max_oxygen / 2;
+    player->hp = player->hp + 10;
+    player->oxygen = player->oxygen + 10;
+
+    if (player->hp > player->max_hp) player->hp = player->max_hp;
+    if (player->oxygen > player->max_oxygen) player->oxygen = player->max_oxygen;
+
     printf(COLOR_GREEN "Vous êtes reposé\n" COLOR_RESET);
     pause_screen();
 }

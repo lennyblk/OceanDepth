@@ -6,6 +6,8 @@
 #include "../include/constants.h"
 #include "../include/types.h"
 #include "../include/ascii_art.h"
+#include "../include/weapon.h"
+#include "../include/armor.h"
 
 int get_zone_from_depth(int depth);
 
@@ -78,18 +80,8 @@ void player_init(Player *player)
     player->zones_unlocked = 1;
     player->inventory_count = 0;
 
-    strcpy(player->equipped_weapon.name, "Harpon Rouillé");
-    player->equipped_weapon.type = WEAPON_RUSTY_HARPOON;
-    player->equipped_weapon.attack_min = 18;
-    player->equipped_weapon.attack_max = 25;
-    player->equipped_weapon.oxygen_cost_per_attack = 1;
-    player->equipped_weapon.defense_ignore = 0;
-    player->equipped_weapon.rarity = RARITY_COMMON;
-
-    strcpy(player->equipped_armor.name, "Néoprène Basic");
-    player->equipped_armor.defense = 8;
-    player->equipped_armor.oxygen_cost_per_turn = 0;
-    player->equipped_armor.rarity = RARITY_COMMON;
+    player->equipped_weapon = get_weapon_stats(WEAPON_RUSTY_HARPOON);
+    player->equipped_armor = get_armor_stats(ARMOR_BASIC_SUIT);
 
     player->is_paralyzed = 0;
     player->is_poisoned = 0;

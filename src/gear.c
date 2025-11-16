@@ -5,6 +5,8 @@
 #include "../include/player.h"
 #include "../include/utils.h"
 #include "../include/constants.h"
+#include "../include/weapon.h"  
+#include "../include/armor.h"   
 
 void manage_equipment(Player *player)
 {

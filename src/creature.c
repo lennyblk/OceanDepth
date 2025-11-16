@@ -17,47 +17,47 @@ static void initialize_creature_stats(Creature *creature, int zone_level)
     switch (creature->type)
     {
     case CREATURE_KRAKEN:
-        base_hp_min = 100;
-        base_hp_max = 150;
-        base_atk_min = 18;
-        base_atk_max = 28;
-        base_def = 12;
+        base_hp_min = 120;
+        base_hp_max = 180;
+        base_atk_min = 35;
+        base_atk_max = 45;
+        base_def = 8;
         creature->speed = 5;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_SHARK:
-        base_hp_min = 40;
-        base_hp_max = 70;
-        base_atk_min = 10;
-        base_atk_max = 16;
-        base_def = 3;
+        base_hp_min = 50;
+        base_hp_max = 75;
+        base_atk_min = 14;
+        base_atk_max = 20;
+        base_def = 2;
         creature->speed = 15;
         creature->special_effect = EFFECT_BLEED;
         break;
     case CREATURE_JELLYFISH:
-        base_hp_min = 15;
-        base_hp_max = 30;
-        base_atk_min = 5;
-        base_atk_max = 10;
+        base_hp_min = 20;
+        base_hp_max = 35;
+        base_atk_min = 10;
+        base_atk_max = 15;
         base_def = 0;
         creature->speed = 8;
         creature->special_effect = EFFECT_PARALYSIS;
         break;
     case CREATURE_SWORDFISH:
-        base_hp_min = 50;
-        base_hp_max = 70;
-        base_atk_min = 12;
-        base_atk_max = 20;
-        base_def = 5;
+        base_hp_min = 40;
+        base_hp_max = 60;
+        base_atk_min = 25;
+        base_atk_max = 30;
+        base_def = 1;
         creature->speed = 12;
         creature->special_effect = EFFECT_NONE;
         break;
     case CREATURE_GIANT_CRAB:
-        base_hp_min = 60;
-        base_hp_max = 90;
-        base_atk_min = 8;
-        base_atk_max = 14;
-        base_def = 15;
+        base_hp_min = 70;
+        base_hp_max = 100;
+        base_atk_min = 20;
+        base_atk_max = 30;
+        base_def = 10;
         creature->speed = 3;
         creature->special_effect = EFFECT_NONE;
         break;
