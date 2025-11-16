@@ -72,6 +72,7 @@ void player_init(Player *player)
     player->pearls = STARTING_PEARLS;
     player->experience = STARTING_EXPERIENCE;
     player->level = STARTING_LEVEL;
+    player->rest_count = 0;
 
     player->x = 0;
     player->y = 0;

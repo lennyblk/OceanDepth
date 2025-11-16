@@ -24,6 +24,8 @@ void initialize_game(Player *player, Map *map)
     player_init_with_name(player, name);
     map_init(map);
 
+    player->rest_count = 0;
+
     if (name[0] == 'T' || name[0] == 't')
     {
         printf(COLOR_RED "\n*** MODE TEST ACTIVÉ ***\n" COLOR_RESET);

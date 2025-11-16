@@ -190,6 +190,7 @@ typedef struct
     int paralysis_turns_left;
     int poison_turns_left;
     int attacks_reduced_next_turn;
+    int rest_count;  
 
     // Stored (purchased but not yet equipped) gear
     Weapon stored_weapon;

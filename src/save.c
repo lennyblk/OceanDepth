@@ -42,6 +42,7 @@ int save_game(const Player *player, const Map *map, int game_time)
     save_data.save_version = 1; // Version de sauvegarde pour compatibilité future
     memcpy(&save_data.player, player, sizeof(Player));
     memcpy(&save_data.map, map, sizeof(Map));
+    fprintf(file, "%d\n", player->rest_count);
 
     written = fwrite(&save_data, sizeof(SaveData), 1, file);
 
@@ -109,6 +110,7 @@ int load_game(Player *player, Map *map, int *game_time)
     memcpy(map, &save_data.map, sizeof(Map));
     *game_time = save_data.game_time;
     map->current_zone_index = player->current_zone;
+    fscanf(file, "%d", &player->rest_count);
 
     printf("\n=== Partie chargée avec succès ===\n");
     printf("Joueur: %s - Niveau %d\n", player->name, player->level);
