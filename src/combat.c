@@ -209,14 +209,19 @@ int start_combat(Player *player, Creature creatures[], int creature_count)
         int oxygen_loss = random_range(2, 5) + player->current_zone;
         player_use_oxygen(player, oxygen_loss);
 
-        if (player->oxygen <= 0)
+        // Si l'oxygène est à 0, dégâts d'asphyxie fixes
+        if (player->oxygen == 0)
         {
-            printf(COLOR_RED "Vous n'avez plus d'oxygène !\n" COLOR_RESET);
+            printf(COLOR_RED "Vous manquez cruellement d'oxygène!\n" COLOR_RESET);
+            printf(COLOR_RED "Vous subissez 10 dégâts d'asphyxie!\n" COLOR_RESET);
+            
             if (player_is_alive(player))
-                player_take_damage(player, 5);
+                player_take_damage(player, 10);
         }
-
-        player_restore_oxygen(player, 8);
+        else
+        {
+            player_restore_oxygen(player, 8);
+        }
 
         if (player->fatigue > 0)
         {

@@ -220,22 +220,25 @@ int player_use_oxygen(Player *player, int oxygen_cost)
         return 1;
     }
 
-    if (player->oxygen < oxygen_cost)
+    player->oxygen -= oxygen_cost;
+    
+    // Bloquer l'oxygène à 0 minimum (pas de valeurs négatives)
+    if (player->oxygen < 0)
     {
-        printf(COLOR_RED "Pas assez d'oxygène! (%d requis, %d disponible)" COLOR_RESET "\n",
-               oxygen_cost, player->oxygen);
-        return 0;
+        player->oxygen = 0;
     }
 
-    player->oxygen -= oxygen_cost;
-
-    if (player->oxygen <= 10)
+    if (player->oxygen == 0)
+    {
+        printf(COLOR_RED "ATTENTION: Vous n'avez plus d'oxygène!" COLOR_RESET "\n");
+    }
+    else if (player->oxygen <= 10)
     {
         printf(COLOR_RED "ATTENTION: Niveau d'oxygène critique! (%d%%)" COLOR_RESET "\n",
                player->oxygen);
     }
 
-    return 1;
+    return 1;  // On retourne toujours 1 pour permettre l'action
 }
 
 void player_restore_oxygen(Player *player, int oxygen_amount)
